@@ -1,2 +1,2 @@
 # JonnyBot
-#yeah idk what else to put
+yeah idk what else to put
