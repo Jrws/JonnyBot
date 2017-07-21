@@ -176,7 +176,7 @@ async def who(ctx):
 @client.command(pass_context=True,description="Weather forecast")
 async def weather(ctx, city: str, ctry="", temp_mode="f"):
     try:
-        owm = pyowm.OWM('ec091edd09ec01ba7ec0711bca4a8802')
+        owm = pyowm.OWM('idontreallycareifyouusethis')
         try:
             if len(ctry) > 0:
                 observation = owm.weather_at_place(city + "," + ctry)
