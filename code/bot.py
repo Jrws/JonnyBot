@@ -1,5 +1,8 @@
 import discord
 import random
+import re
+import asyncio
+import pyowm
 
 from discord.ext import commands
 
@@ -9,31 +12,56 @@ bot_prefix = "~"
 client = commands.Bot(description=description, command_prefix=bot_prefix)
 
 a = False
-aly = ["Go scotts!", "I LOVE CATS THEYRE SO CUTE@@@@@@@@", "YOURE KILLING POLAR BEARS", "JUPITER DOESN'T HAVE FEELINGS","Tr****","KILL YOURSELFFFFFFFFFFF","Water your plant!","RUDEEEE!","😂😂😂 lol!","GO DIE IN A HOLE!!!!","FIGHT ME","Yus!","GDP","FKENWO-","FNEKDKS","TBEICNE","YOU WRETCHED BAFFONS!!!!","Rhanks!","ASDLKFJASLDFA","ASFJAALSKDFJ","ASDFLKJASDF","ASDFAGSZSEF","KILL YOUR ELF","ASJDKFASDFKLJASDFAWERFAESFSRFSFCXSCVZSCRVCSCVCZ", "VERLYSSA ISN'T REAL@@@@@@@@", "I HATE YOU@@@@@@", "YOU GITA SUCK@@@@@", "NOOOOOK", "HEYYYYYY","GALEXXXXXXXXXXXXX","ALEX ONLY HAS FEELINGS FOR GABBYYYYYYYY@@@@@@@@@@@@"]
+aly = ["Go scotts!", "I LOVE CATS THEYRE SO CUTE@@@@@@@@", "YOURE KILLING POLAR BEARS", "JUPITER DOESN'T HAVE FEELINGS","Tr#@!%","KILL YOURSELFFFFFFFFFFF","Water your plant!","RUDEEEE!","😂😂😂 lol!","GO DIE IN A HOLE!!!!","FIGHT ME","Yus!","GDP","FKENWO-","FNEKDKS","TBEICNE","YOU WRETCHED BAFFONS!!!!","Rhanks!","ASDLKFJASLDFA","ASFJAALSKDFJ","ASDFLKJASDF","ASDFAGSZSEF","KILL YOUR ELF",
+"ASJDKFASDFKLJASDFAWERFAESFSRFSFCXSCVZSCRVCSCVCZ", "VERLYSSA ISN'T REAL@@@@@@@@", "I HATE YOU@@@@@@", "YOU GITA SUCK@@@@@", "NOOOOOK", "HEYYYYYY","GALEXXXXXXXXXXXXX","ALEX ONLY HAS FEELINGS FOR GABBYYYYYYYY@@@@@@@@@@@@","FKANFBWOX","NOOOOOOOOOOO!!!!!!!!","*rolls eyes*"]
 
-jo = ["Lol","Lol","Lol","Lol","Lol","Lol","Lol","Lol","Lol","Lol","Lol","Lol","Lol","Lol","Lol","Lol","Lol","Lol","Lol","Lol","Lo\n*l","Lpl\n*Lol","Lpl\n*Lpl\n**Lol","WE MUST SEIZE THE MEANS OF SOCIAL GRATIFICATION"]
+jo = ["Lol","Lol","Lol","Lol","Lol","Lol","Lol","Lol","Lol","Lol","Lol","Lol","Lol","Lol","Lol","Lol","Lol","Lol","Lol","Lol","Lo\n*l","Lpl\n*Lol","Lpl\n*Lpl\n**Lol",  "WE MUST SEIZE THE MEANS OF SOCIAL GRATIFICATION"]
 
 kw = ["Annoying and unoriginal","Good question","#discordmasterrace"]
 
+al = ["K","Wau","K then"]
+
+ow = ["Ok","Y","Galex is real"]
+
+jny = ["aysat","AND HIS NAME IS JOHN CENA!!!","Are you sure about that?","Bruh","I like trains"]
+
 wyrq = open("C:\\Users\\Jonny\\Desktop\\aysatbot\\wyr.txt","r",encoding='utf8')
 wyrlist = wyrq.readlines()
+wyrq.close()
 
 truthq = open("C:\\Users\\Jonny\\Desktop\\aysatbot\\truths.txt","r",encoding='utf8')
 truthlist = truthq.readlines()
+truthq.close()
 
-story = {'id': ["list"]}
-game = {'id': "True/False"}
+dareq = open("C:\\Users\\Jonny\\Desktop\\aysatbot\\dares.txt","r",encoding='utf8')
+darelist = dareq.readlines()
+dareq.close()
+
+cous = open("C:\\Users\\Jonny\\Desktop\\aysatbot\\countries.txt","r",encoding='utf8')
+coulist = cous.readlines()
+cous.close()
+cc = {"abbreviation":"country name"}
+for line in coulist:
+    x = line.index(":")
+    cc[line[0:x]] = line[x+1:]
+
+mem = []
 
 @client.event
 async def on_ready():
+    global mem
     print("------")
     print("Logged in as")
     print(client.user.name)
     print(client.user.id)
     print(discord.__version__)
     print("------")
+    #print(client.servers)
+    """for serv in client.servers:
+        for em in serv.emojis:
+            print(em.id)"""
 
-@client.command(pass_context=True,description="Simulates Alyssa's speech patterns with 100% accuracy")
+@client.command(pass_context=True,description="Simulates Alyssa's speech patterns with 100% accuracy",categories="test")
 async def alyssa(ctx):
     for i in range(0,3):
         rand = random.choice(aly)
@@ -47,6 +75,21 @@ async def joe(ctx):
 @client.command(pass_context=True,description="Simulates Kevin W's speech patterns with 100% accuracy")
 async def kevw(ctx):
     rand = random.choice(kw)
+    await client.say(rand)
+
+@client.command(pass_context=True,description="Simulates Alex's speech patterns with 100% accuracy")
+async def alex(ctx):
+    rand = random.choice(al)
+    await client.say(rand)
+
+@client.command(pass_context=True,description="Simulates Owen's speech patterns with 100% accuracy")
+async def owen(ctx):
+    rand = random.choice(ow)
+    await client.say(rand)
+
+@client.command(pass_context=True,description="Simulates Jonny's speech patterns with 100% accuracy")
+async def jon(ctx):
+    rand = random.choice(jny)
     await client.say(rand)
 
 @client.command(pass_context=True,description="Toggles 'Are you sure about that' spam; only works in '#nsfw-spam'")
@@ -70,6 +113,15 @@ async def truth(ctx):
     global truthlist
     rand = random.choice(truthlist)
     await client.say(rand)
+
+@client.command(pass_context=True,description="Randomly selects a 'dare' question from a list")
+async def dare(ctx):
+    global darelist
+    rand = random.choice(darelist)
+    await client.say(rand)
+
+story = {'id': ["list"]}
+game = {'id': "True/False"}
 
 @client.command(pass_context=True,description="For Improv games:\n\nstart: starts Improv game\nstop: ends Improv game\nresume: resumes the Improv game\ndelete: deletes last entry\nstory: prints the Improv story")
 async def improv(ctx, option: str):
@@ -117,29 +169,96 @@ async def improv(ctx, option: str):
     else:
         await client.say("Unknown Improv command.")
 
+@client.command(pass_context=True,description="Who do you really like?")
+async def who(ctx):
+    await client.say("Who do you really like? Not a sarcastic answer, but actually. By the way, last time, it was a sarcastic answer. Celebrity crushes don't count.")
+
+@client.command(pass_context=True,description="Weather forecast")
+async def weather(ctx, city: str, ctry="", temp_mode="f"):
+    try:
+        owm = pyowm.OWM('ec091edd09ec01ba7ec0711bca4a8802')
+        try:
+            if len(ctry) > 0:
+                observation = owm.weather_at_place(city + "," + ctry)
+            else:
+                observation = owm.weather_at_place(city)
+        except:
+            await client.say("City not found.")
+            return
+        w = observation.get_weather()
+        fore = w.get_status()
+        if fore == "Clouds":
+            fe = ":cloud:"
+        elif fore == "Clear":
+            fe = ":sunny:"
+        elif fore == "Rain":
+            fe = ":cloud_rain:"
+        elif fore == "Snow":
+            fe = ":cloud_snow:"
+        elif fore == "Thunderstorm":
+            fe = ":thunder_cloud_rain:"
+        elif fore == "Haze":
+            fe = "<:haze:336952276524466179>"
+        elif fore == "Mist":
+            fe = "<:mist:336948218141343744>"
+        else:
+            fe = fore
+        if temp_mode.lower() == "c":
+            t = str(w.get_temperature('celsius')['temp']) + "°C"
+            hi = str(w.get_temperature('celsius')['temp_max']) + "°C"
+            lo = str(w.get_temperature('celsius')['temp_min']) + "°C"
+        elif temp_mode.lower() == "k":
+            t = str(w.get_temperature()['temp']) + "°K"
+            hi = str(w.get_temperature()['temp_max']) + "°K"
+            lo = str(w.get_temperature()['temp_min']) + "°K"
+        else:
+            t = str(w.get_temperature('fahrenheit')['temp']) + "°F"
+            hi = str(w.get_temperature('fahrenheit')['temp_max']) + "°F"
+            lo = str(w.get_temperature('fahrenheit')['temp_min']) + "°F"
+        l = str(observation.get_location())
+        loc = l[l.index('name=')+5:l.index(', lon')]
+        c = cc[observation.get_location().get_country()]
+        loc = loc + ", " + c
+        text = "%s\n    %s %s\n\n    High: %s, Low: %s\n\n    " % (loc,fe,t,hi,lo)
+        await client.say(text)
+    except:
+        await client.say("Unexpected error")
 
 @client.event
 async def on_message(message):
     global story, game
-    if message.author.id != message.server.me.id and message.content[0] != bot_prefix and a == 1 and message.content[-1] != "?" and message.channel.name=="nsfw-spam":
-        await client.send_message(message.channel, '{0.author.mention}, are you sure about that?'.format(message))
-    if "game night" in message.content.lower() and message.channel.name == "game-night":
-        gn = message.server.roles
-        for i in gn:
-            if i.name == "game-night":
-                await client.send_message(message.channel, "{0.mention}".format(i))
-    if message.content.lower()[0:4] == "i'm ":
-        await client.send_message(message.channel, "Hi, " + message.content[4:])
-    elif message.content.lower()[0:3] == "im ":
-        await client.send_message(message.channel, "Hi, " + message.content[3:])
-    elif message.content.lower()[0:5] == "i am ":
-        await client.send_message(message.channel, "Hi, " + message.content[5:])
-    if message.server.id not in story:
-        story[message.server.id] = []
-        game[message.server.id] = False
-    if game[message.server.id] == True:
-        if message.content[0] == "." and message.content[1] != ".":
-            story[message.server.id].append(message.content)
+    if message.author.id != client.user.id:
+        if message.author.id != message.server.me.id and message.content[0] not in [bot_prefix,"!"] and a == 1 and "?" not in message.content and message.channel.name=="nsfw-spam":
+            await client.send_message(message.channel, '{0.author.mention}, are you sure about that?'.format(message))
+        """if "game night" in message.content.lower() and message.channel.name == "game-night":
+            gn = message.server.roles
+            for i in gn:
+                if i.name == "game-night":
+                    await client.send_message(message.channel, "{0.mention}".format(i))"""
+        if message.author.id != message.server.me.id and message.content[0] not in [bot_prefix,"!"] and "?" not in message.content and len(message.content) > 4 and " " in message.content:
+            if random.randint(1,100) == 1:
+                await client.send_message(message.channel, '{0.author.mention}, are you sure about that?'.format(message))
+        if "im" in message.content.lower().replace("'","") or "i am" in message.content.lower():
+            if message.content.lower()[0:4] == "i'm ":
+                await client.send_message(message.channel, "Hi, " + message.content[4:])
+            elif message.content.lower()[0:3] == "im ":
+                await client.send_message(message.channel, "Hi, " + message.content[3:])
+            elif message.content.lower()[0:5] == "i am ":
+                await client.send_message(message.channel, "Hi, " + message.content[5:])
+            else:
+                x = re.sub(r'[^a-zA-Z0-9\s]', '', message.content.lower())
+                if " im " in x:
+                    await client.send_message(message.channel,"Hi, " + x[x.index(" im ")+4:])
+                elif " i am " in  x:
+                    await client.send_message(message.channel,"Hi, " + x[x.index(" i am ")+6:])
+        if message.server.id not in story:
+            story[message.server.id] = []
+            game[message.server.id] = False
+        if game[message.server.id] == True:
+            if message.content[0] == "." and message.content[1] != ".":
+                story[message.server.id].append(message.content)
+        if "somebody" in message.content.lower() or "someone" in message.content.lower():
+            await client.send_message(message.channel,"AND HIS NAME IS JOHN CENA!!!!!!!!!!!!!")
     await client.process_commands(message)
 
-client.run("Nevergonnagiveyouupnevergonnaletyoudownnevergonnarunaroundanddesertyou")
+client.run("NeverGonnaGiveYouUpNeverGOnnaLetYouDownNeverGOnnaRunAroundAndDesertYou")
