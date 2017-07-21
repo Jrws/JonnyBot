@@ -12,7 +12,7 @@ yeah idk what else to put
   + Who do you really like? Not a sarcastic answer, but actually. By the way, last time, it was a sarcastic answer. Celebrity crushes don't count
   + Weather forecast, search by city
   + Better targetting for "I'm"
-  + -Removed game night notifier
+  + Removed game night notifier
   
 ### v1.0.0
   + Speech emulators for Alyssa, Joe, and Kevin W
