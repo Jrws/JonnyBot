@@ -1,5 +1,14 @@
 # JonnyBot
-yeah idk what else to put
+Game, Music, Satire
+
+## Current Projects
+
+  + Time zone finder (search-by-city)
+  + Improv turn order update
+  + Polishing up music bot commands
+  + Speech emulation for Kevin M, Vern, Aaron, Gabby, Colin
+  + Relative paths
+  + Actually using github
 
 ## Releases
 
