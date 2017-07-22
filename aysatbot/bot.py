@@ -5,6 +5,7 @@ import asyncio
 import pyowm
 
 from discord.ext import commands
+from info import options
 
 description = "JonnyBot - Irritation and game night"
 bot_prefix = "~"
@@ -25,21 +26,10 @@ ow = ["Ok","Y","Galex is real"]
 
 jny = ["aysat","AND HIS NAME IS JOHN CENA!!!","Are you sure about that?","Bruh","I like trains"]
 
-wyrq = open("C:\\Users\\Jonny\\Desktop\\aysatbot\\wyr.txt","r",encoding='utf8')
-wyrlist = wyrq.readlines()
-wyrq.close()
-
-truthq = open("C:\\Users\\Jonny\\Desktop\\aysatbot\\truths.txt","r",encoding='utf8')
-truthlist = truthq.readlines()
-truthq.close()
-
-dareq = open("C:\\Users\\Jonny\\Desktop\\aysatbot\\dares.txt","r",encoding='utf8')
-darelist = dareq.readlines()
-dareq.close()
-
-cous = open("C:\\Users\\Jonny\\Desktop\\aysatbot\\countries.txt","r",encoding='utf8')
+cous = open("C:\\Users\\Jonny\\Documents\\GitHub\\JonnyBot\\aysatbot\\","r",encoding='utf8')
 coulist = cous.readlines()
 cous.close()
+
 cc = {"abbreviation":"country name"}
 for line in coulist:
     x = line.index(":")
@@ -102,24 +92,6 @@ async def aysat(ctx):
         else:
             await client.say("[aysat: OFF]")
 
-@client.command(pass_context=True,description="Randomly selects a 'would you rather' question from a list")
-async def wyr(ctx):
-    global wyrlist
-    rand = random.choice(wyrlist)
-    await client.say(rand)
-
-@client.command(pass_context=True,description="Randomly selects a 'truth' question from a list")
-async def truth(ctx):
-    global truthlist
-    rand = random.choice(truthlist)
-    await client.say(rand)
-
-@client.command(pass_context=True,description="Randomly selects a 'dare' question from a list")
-async def dare(ctx):
-    global darelist
-    rand = random.choice(darelist)
-    await client.say(rand)
-
 story = {'id': ["list"]}
 game = {'id': "True/False"}
 
@@ -176,7 +148,7 @@ async def who(ctx):
 @client.command(pass_context=True,description="Weather forecast")
 async def weather(ctx, city: str, ctry="", temp_mode="f"):
     try:
-        owm = pyowm.OWM('idontreallycareifyouusethis')
+        owm = pyowm.OWM(options.owm())
         try:
             if len(ctry) > 0:
                 observation = owm.weather_at_place(city + "," + ctry)
@@ -224,6 +196,75 @@ async def weather(ctx, city: str, ctry="", temp_mode="f"):
     except:
         await client.say("Unexpected error")
 
+@client.command(pass_context=True,description="Local time finder")
+async def loctime(ctx, city: str, ctry=""):
+    owm = pyowm.OWM(options.owm())
+    try:
+        if len(ctry) > 0:
+            observation = owm.weather_at_place(city + "," + ctry)
+        else:
+            observation = owm.weather_at_place(city)
+    except:
+        await client.say("City not found.")
+        return
+    la = observation.get_location().get_lat()
+    lo = observation.get_location().get_lon()
+    latlon = str(la) + ', ' + str(lo)
+    timestamp = time.time()
+    apikey = options.tz()
+    apicall = 'https://maps.googleapis.com/maps/api/timezone/json?location=' + latlon + '&timestamp=' + str(timestamp) + '&key=' + apikey
+    r = requests.get(apicall)
+    resp = json.loads(r.text)
+    lt = timestamp + resp["dstOffset"] + resp["rawOffset"]
+    t = time.localtime(lt)
+    hr = t.tm_hour + 7
+    minu = t.tm_min
+    sec = t.tm_sec
+    day = t.tm_mday
+    mon = t.tm_mon
+    year = t.tm_year
+    m = "AM"
+    if hr > 11:
+        m = "PM"
+    if hr > 12 and hr <= 24:
+        hr -= 12
+    elif hr >= 24:
+        day += 1
+        m = "AM"
+        hr -= 24
+        if hr > 11:
+            m = "PM"
+        if hr > 12:
+            hr -= 12
+        if day == 32:
+            day = 1
+            mon += 1
+            if mon == 13:
+                mon = 1
+                year += 1
+        elif day == 31 and mon in [4,6,9,11]:
+            day = 1
+            mon += 1
+        elif mon == 2 and day == 30 and (year % 4 == 0 and year % 100 != 0 or year % 400 == 0):
+            day = 1
+            mon += 1
+        elif mon == 2 and day == 29 and not (year % 4 == 0 and year % 100 != 0 or year % 400 == 0):
+            day = 1
+            mom = mon + 1
+    if hr < 10:
+        hr = "0" + str(hr)
+    if minu < 10:
+        minu = "0" + str(minu)
+    if sec < 10:
+        sec = "0" + str(sec)
+
+    l = str(observation.get_location())
+    loc = l[l.index('name=')+5:l.index(', lon')]
+    c = cc[observation.get_location().get_country()]
+    loc = loc + ", " + c
+
+    await client.say(("{}\n    {}:{}:{} {}\n    {}/{}/{}\n    {}").format(loc,hr,minu,sec,m,mon,day,year,resp["timeZoneName"]))
+
 @client.event
 async def on_message(message):
     global story, game
@@ -261,4 +302,4 @@ async def on_message(message):
             await client.send_message(message.channel,"AND HIS NAME IS JOHN CENA!!!!!!!!!!!!!")
     await client.process_commands(message)
 
-client.run("NeverGonnaGiveYouUpNeverGOnnaLetYouDownNeverGOnnaRunAroundAndDesertYou")
+client.run(options.token())
