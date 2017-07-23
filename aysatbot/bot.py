@@ -3,6 +3,9 @@ import random
 import re
 import asyncio
 import pyowm
+import time
+import requests
+import json
 
 from discord.ext import commands
 from info import options
