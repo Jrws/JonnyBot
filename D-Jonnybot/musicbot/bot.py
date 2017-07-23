@@ -1837,12 +1837,14 @@ class MusicBot(discord.Client):
 
         lines = []
         unlisted = 0
+        qtotal = 0
         andmoretext = '* ... and %s more*' % ('x' * len(player.playlist.entries))
 
         if player.current_entry:
             song_progress = str(timedelta(seconds=player.progress)).lstrip('0').lstrip(':')
             song_total = str(timedelta(seconds=player.current_entry.duration)).lstrip('0').lstrip(':')
             prog_str = '`[%s/%s]`' % (song_progress, song_total)
+            qtotal = player.current_entry.duration - player.progress
 
             if player.current_entry.meta.get('channel', False) and player.current_entry.meta.get('author', False):
                 lines.append("Now Playing: **%s** added by **%s** %s\n" % (
@@ -1853,6 +1855,7 @@ class MusicBot(discord.Client):
         for i, item in enumerate(player.playlist, 1):
             song_total = str(timedelta(seconds=item.duration)).lstrip('0').lstrip(':')
             songlen = '`[%s]`' % song_total
+            qtotal += item.duration
             if item.meta.get('channel', False) and item.meta.get('author', False):
                 nextline = '`{}.` **{}** added by **{}** {}'.format(i, item.title, item.meta['author'].name, songlen).strip()
             else:
@@ -1873,6 +1876,10 @@ class MusicBot(discord.Client):
         if not lines:
             lines.append(
                 'There are no songs queued! Queue something with {}play.'.format(self.config.command_prefix))
+        else:
+            qlen = str(timedelta(seconds=qtotal)).lstrip('0').lstrip(':')
+            qlen= '`[%s]`' % qlen
+            lines.append("\nTime left in queue: {}".format(qlen))
 
         message = '\n'.join(lines)
         return Response(message, delete_after=30)
@@ -1887,12 +1894,14 @@ class MusicBot(discord.Client):
 
         lines = []
         unlisted = 0
+        qtotal = 0
         andmoretext = '* ... and %s more*' % ('x' * len(player.playlist.entries))
 
         if player.current_entry:
             song_progress = str(timedelta(seconds=player.progress)).lstrip('0').lstrip(':')
             song_total = str(timedelta(seconds=player.current_entry.duration)).lstrip('0').lstrip(':')
             prog_str = '`[%s/%s]`' % (song_progress, song_total)
+            qtotal = player.current_entry.duration - player.progress
 
             if player.current_entry.meta.get('channel', False) and player.current_entry.meta.get('author', False):
                 lines.append("Now Playing: **%s** added by **%s** %s\n" % (
@@ -1903,6 +1912,7 @@ class MusicBot(discord.Client):
         for i, item in enumerate(player.playlist, 1):
             song_total = str(timedelta(seconds=item.duration)).lstrip('0').lstrip(':')
             songlen = '`[%s]`' % song_total
+            qtotal += item.duration
             if item.meta.get('channel', False) and item.meta.get('author', False):
                 nextline = '`{}.` **{}** added by **{}** {}'.format(i, item.title, item.meta['author'].name, songlen).strip()
             else:
@@ -1923,6 +1933,10 @@ class MusicBot(discord.Client):
         if not lines:
             lines.append(
                 'There are no songs queued! Queue something with {}play.'.format(self.config.command_prefix))
+        else:
+            qlen = str(timedelta(seconds=qtotal)).lstrip('0').lstrip(':')
+            qlen= '`[%s]`' % qlen
+            lines.append("\nTime left in queue: {}".format(qlen))
 
         message = '\n'.join(lines)
         return Response(message, delete_after=30)
