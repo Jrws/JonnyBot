@@ -2,7 +2,7 @@ def token():
     return "NeverGonnaGiveYouUp"
 
 def owm():
-    return "NeverGOnnaLetYouDown"
+    return "NeverGonnaLetYouDown"
 
 def tz():
     return "NeverGonnaRunAroundAndDesertYou"
