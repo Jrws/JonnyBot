@@ -3,6 +3,7 @@ import random
 import re
 import asyncio
 import pyowm
+import datetime
 import time
 import requests
 import json
@@ -201,72 +202,76 @@ async def weather(ctx, city: str, ctry="", temp_mode="f"):
 
 @client.command(pass_context=True,description="Local time finder")
 async def loctime(ctx, city: str, ctry=""):
-    owm = pyowm.OWM(options.owm())
-    try:
-        if len(ctry) > 0:
-            observation = owm.weather_at_place(city + "," + ctry)
-        else:
-            observation = owm.weather_at_place(city)
-    except:
-        await client.say("City not found.")
-        return
-    la = observation.get_location().get_lat()
-    lo = observation.get_location().get_lon()
-    latlon = str(la) + ', ' + str(lo)
-    timestamp = time.time()
-    apikey = options.tz()
-    apicall = 'https://maps.googleapis.com/maps/api/timezone/json?location=' + latlon + '&timestamp=' + str(timestamp) + '&key=' + apikey
-    r = requests.get(apicall)
-    resp = json.loads(r.text)
-    lt = timestamp + resp["dstOffset"] + resp["rawOffset"]
-    t = time.localtime(lt)
-    hr = t.tm_hour + 7
-    minu = t.tm_min
-    sec = t.tm_sec
-    day = t.tm_mday
-    mon = t.tm_mon
-    year = t.tm_year
-    m = "AM"
-    if hr > 11:
-        m = "PM"
-    if hr > 12 and hr <= 24:
-        hr -= 12
-    elif hr >= 24:
-        day += 1
+    if city.lower() == "utc" or city.lower() == "gmt":
+        utc = str(datetime.datetime.utcnow())
+        await client.say(("UTC / GMT\n\n    {}\n    {}/{}/{}").format(utc[11:19],utc[5:7],utc[8:10],utc[0:4]))
+    else:
+        owm = pyowm.OWM(options.owm())
+        try:
+            if len(ctry) > 0:
+                observation = owm.weather_at_place(city + "," + ctry)
+            else:
+                observation = owm.weather_at_place(city)
+        except:
+            await client.say("City not found.")
+            return
+        la = observation.get_location().get_lat()
+        lo = observation.get_location().get_lon()
+        latlon = str(la) + ', ' + str(lo)
+        timestamp = time.time()
+        apikey = options.tz()
+        apicall = 'https://maps.googleapis.com/maps/api/timezone/json?location=' + latlon + '&timestamp=' + str(timestamp) + '&key=' + apikey
+        r = requests.get(apicall)
+        resp = json.loads(r.text)
+        lt = timestamp + resp["dstOffset"] + resp["rawOffset"]
+        t = time.localtime(lt)
+        hr = t.tm_hour + 7
+        minu = t.tm_min
+        sec = t.tm_sec
+        day = t.tm_mday
+        mon = t.tm_mon
+        year = t.tm_year
         m = "AM"
-        hr -= 24
         if hr > 11:
             m = "PM"
-        if hr > 12:
+        if hr > 12 and hr <= 24:
             hr -= 12
-        if day == 32:
-            day = 1
-            mon += 1
-            if mon == 13:
-                mon = 1
-                year += 1
-        elif day == 31 and mon in [4,6,9,11]:
-            day = 1
-            mon += 1
-        elif mon == 2 and day == 30 and (year % 4 == 0 and year % 100 != 0 or year % 400 == 0):
-            day = 1
-            mon += 1
-        elif mon == 2 and day == 29 and not (year % 4 == 0 and year % 100 != 0 or year % 400 == 0):
-            day = 1
-            mom = mon + 1
-    if hr < 10:
-        hr = "0" + str(hr)
-    if minu < 10:
-        minu = "0" + str(minu)
-    if sec < 10:
-        sec = "0" + str(sec)
+        elif hr >= 24:
+            day += 1
+            m = "AM"
+            hr -= 24
+            if hr > 11:
+                m = "PM"
+            if hr > 12:
+                hr -= 12
+            if day == 32:
+                day = 1
+                mon += 1
+                if mon == 13:
+                    mon = 1
+                    year += 1
+            elif day == 31 and mon in [4,6,9,11]:
+                day = 1
+                mon += 1
+            elif mon == 2 and day == 30 and (year % 4 == 0 and year % 100 != 0 or year % 400 == 0):
+                day = 1
+                mon += 1
+            elif mon == 2 and day == 29 and not (year % 4 == 0 and year % 100 != 0 or year % 400 == 0):
+                day = 1
+                mom = mon + 1
+        if hr < 10:
+            hr = "0" + str(hr)
+        if minu < 10:
+            minu = "0" + str(minu)
+        if sec < 10:
+            sec = "0" + str(sec)
 
-    l = str(observation.get_location())
-    loc = l[l.index('name=')+5:l.index(', lon')]
-    c = cc[observation.get_location().get_country()]
-    loc = loc + ", " + c
+        l = str(observation.get_location())
+        loc = l[l.index('name=')+5:l.index(', lon')]
+        c = cc[observation.get_location().get_country()]
+        loc = loc + ", " + c
 
-    await client.say(("{}\n    {}:{}:{} {}\n    {}/{}/{}\n    {}").format(loc,hr,minu,sec,m,mon,day,year,resp["timeZoneName"]))
+        await client.say(("{}\n    {}:{}:{} {}\n    {}/{}/{}\n    {}").format(loc,hr,minu,sec,m,mon,day,year,resp["timeZoneName"]))
 
 @client.event
 async def on_message(message):
