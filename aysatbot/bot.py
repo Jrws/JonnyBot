@@ -26,7 +26,7 @@ ow = ["Ok","Y","Galex is real"]
 
 jny = ["aysat","AND HIS NAME IS JOHN CENA!!!","Are you sure about that?","Bruh","I like trains"]
 
-cous = open("C:\\Users\\Jonny\\Documents\\GitHub\\JonnyBot\\aysatbot\\","r",encoding='utf8')
+cous = open("C:\\Users\\Jonny\\Documents\\GitHub\\JonnyBot\\aysatbot\\countries.txt","r",encoding='utf8')
 coulist = cous.readlines()
 cous.close()
 
