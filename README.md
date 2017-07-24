@@ -2,7 +2,7 @@
 Game, Music, Satire
 
 ## Current Projects
-
+  + Never Have I Ever implementation
   + Time zone finder (search-by-city)
   + Improv turn order update
   + Polishing up music bot commands
