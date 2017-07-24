@@ -361,7 +361,7 @@ async def loctime(ctx, city: str, ctry=""):
 @client.event
 async def on_message(message):
     global story, game, last
-    if message.author.id != client.user.id or message.author.id != "325108081241489408":
+    if message.author.id != client.user.id and message.author.id != "325108081241489408":
         if message.author.id != message.server.me.id and message.content[0] not in [bot_prefix,"!"] and a == 1 and "?" not in message.content and message.channel.name=="nsfw-spam":
             await client.send_message(message.channel, '{0.author.mention}, are you sure about that?'.format(message))
         """if "game night" in message.content.lower() and message.channel.name == "game-night":
