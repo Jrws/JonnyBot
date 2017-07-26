@@ -18,17 +18,19 @@ client = commands.Bot(description=description, command_prefix=bot_prefix)
 
 a = False
 aly = ["Go scotts!", "I LOVE CATS THEYRE SO CUTE@@@@@@@@", "YOURE KILLING POLAR BEARS", "JUPITER DOESN'T HAVE FEELINGS","Tr#@!%","KILL YOURSELFFFFFFFFFFF","Water your plant!","RUDEEEE!","😂😂😂 lol!","GO DIE IN A HOLE!!!!","FIGHT ME","Yus!","GDP","FKENWO-","FNEKDKS","TBEICNE","YOU WRETCHED BAFFONS!!!!","Rhanks!","ASDLKFJASLDFA","ASFJAALSKDFJ","ASDFLKJASDF","ASDFAGSZSEF","KILL YOUR ELF",
-"ASJDKFASDFKLJASDFAWERFAESFSRFSFCXSCVZSCRVCSCVCZ", "VERLYSSA ISN'T REAL@@@@@@@@", "I HATE YOU@@@@@@", "YOU GITA SUCK@@@@@", "NOOOOOK", "HEYYYYYY","GALEXXXXXXXXXXXXX","ALEX ONLY HAS FEELINGS FOR GABBYYYYYYYY@@@@@@@@@@@@","FKANFBWOX","NOOOOOOOOOOO!!!!!!!!","*rolls eyes*"]
+"ASJDKFASDFKLJASDFAWERFAESFSRFSFCXSCVZSCRVCSCVCZ", "VERLYSSA ISN'T REAL@@@@@@@@", "I HATE YOU@@@@@@", "YOU GITA SUCK@@@@@", "NOOOOOK", "HEYYYYYY","GALEXXXXXXXXXXXXX","ALEX ONLY HAS FEELINGS FOR GABBYYYYYYYY@@@@@@@@@@@@","FKANFBWOX","NOOOOOOOOOOO!!!!!!!!","*rolls eyes*","*nods*","DJFALSK DFJAS","VICTORYYYY"]
 
 jo = ["Lol","Lol","Lol","Lol","Lol","Lol","Lol","Lol","Lol","Lol","Lol","Lol","Lol","Lol","Lol","Lol","Lol","Lol","Lol","Lol","Lo\n*l","Lpl\n*Lol","Lpl\n*Lpl\n**Lol",  "WE MUST SEIZE THE MEANS OF SOCIAL GRATIFICATION"]
 
 kw = ["Annoying and unoriginal","Good question","#discordmasterrace"]
 
-al = ["K","Wau","K then"]
+al = ["K","Wau","K then","Bro rip","Um"]
 
-ow = ["Ok","Y","Galex is real"]
+ow = ["Ok","Y","Galex is real","Idk","Y tho","i cri evri tiem"]
 
-jny = ["aysat","AND HIS NAME IS JOHN CENA!!!","Are you sure about that?","Bruh","I like trains"]
+jny = ["aysat","AND HIS NAME IS JOHN CENA!!!","Are you sure about that?","Bruh","I like trains","seems legit"]
+
+ga = ["Wau","Harsh","Wau harsh","Lol","Yup","STAHP","HAHA","*shrugs*","Oh","IM DONE","Uhh...","Yey","YAASSSSSS","DAMN"]
 
 cous = open("C:\\Users\\Jonny\\Documents\\GitHub\\JonnyBot\\aysatbot\\countries.txt","r",encoding='utf8')
 coulist = cous.readlines()
@@ -84,6 +86,11 @@ async def owen(ctx):
 @client.command(pass_context=True,description="Simulates Jonny's speech patterns with 100% accuracy")
 async def jon(ctx):
     rand = random.choice(jny)
+    await client.say(rand)
+
+@client.command(pass_context=True,description="Simulates Gabby's speech patterns with 100% accuracy")
+async def gab(ctx):
+    rand = random.choice(ga)
     await client.say(rand)
 
 @client.command(pass_context=True,description="Toggles 'Are you sure about that' spam; only works in '#nsfw-spam'")
@@ -234,15 +241,34 @@ async def order(ctx, *players):
 async def who(ctx):
     await client.say("Who do you really like? Not a sarcastic answer, but actually. By the way, last time, it was a sarcastic answer. Celebrity crushes don't count.")
 
+tem = {'id':'f/c/k'}
+
+@client.command(pass_context=True,description="Temperature mode settings")
+async def temp(ctx, mode: str):
+    global tem
+    s = ctx.message.server.id
+    if mode.lower() == "f":
+        tem[s] = "f"
+        await client.say("Temperature mode set to `F`.")
+    elif mode.lower() == "c":
+        tem[s] = "c"
+        await client.say("Temperature mode set to `C`.")
+    elif mode.lower() == "k":
+        tem[s] == "k"
+        await client.say("Temperature mode set to `K`.")
+    else:
+        await client.say("Unknown temperature mode.")
+
 @client.command(pass_context=True,description="Weather forecast")
-async def weather(ctx, city: str, ctry="", temp_mode="f"):
+async def weather(ctx, *city: str):
+    global tem
     try:
         owm = pyowm.OWM(options.owm())
+        c = ""
+        for i in city:
+            c = c + i + " "
         try:
-            if len(ctry) > 0:
-                observation = owm.weather_at_place(city + "," + ctry)
-            else:
-                observation = owm.weather_at_place(city)
+            observation = owm.weather_at_place(c)
         except:
             await client.say("City not found.")
             return
@@ -252,7 +278,7 @@ async def weather(ctx, city: str, ctry="", temp_mode="f"):
             fe = ":cloud:"
         elif fore == "Clear":
             fe = ":sunny:"
-        elif fore == "Rain":
+        elif fore == "Rain" or fore == "Drizzle":
             fe = ":cloud_rain:"
         elif fore == "Snow":
             fe = ":cloud_snow:"
@@ -264,14 +290,19 @@ async def weather(ctx, city: str, ctry="", temp_mode="f"):
             fe = "<:mist:336948218141343744>"
         else:
             fe = fore
-        if temp_mode.lower() == "c":
-            t = str(w.get_temperature('celsius')['temp']) + "°C"
-            hi = str(w.get_temperature('celsius')['temp_max']) + "°C"
-            lo = str(w.get_temperature('celsius')['temp_min']) + "°C"
-        elif temp_mode.lower() == "k":
-            t = str(w.get_temperature()['temp']) + "°K"
-            hi = str(w.get_temperature()['temp_max']) + "°K"
-            lo = str(w.get_temperature()['temp_min']) + "°K"
+        if ctx.message.server.id in tem:
+            if tem[ctx.message.server.id] == "c":
+                t = str(w.get_temperature('celsius')['temp']) + "°C"
+                hi = str(w.get_temperature('celsius')['temp_max']) + "°C"
+                lo = str(w.get_temperature('celsius')['temp_min']) + "°C"
+            elif tem[ctx.message.server.id] == "k":
+                t = str(w.get_temperature()['temp']) + "°K"
+                hi = str(w.get_temperature()['temp_max']) + "°K"
+                lo = str(w.get_temperature()['temp_min']) + "°K"
+            else:
+                t = str(w.get_temperature('fahrenheit')['temp']) + "°F"
+                hi = str(w.get_temperature('fahrenheit')['temp_max']) + "°F"
+                lo = str(w.get_temperature('fahrenheit')['temp_min']) + "°F"
         else:
             t = str(w.get_temperature('fahrenheit')['temp']) + "°F"
             hi = str(w.get_temperature('fahrenheit')['temp_max']) + "°F"
@@ -286,17 +317,17 @@ async def weather(ctx, city: str, ctry="", temp_mode="f"):
         await client.say("Unexpected error")
 
 @client.command(pass_context=True,description="Local time finder")
-async def loctime(ctx, city: str, ctry=""):
-    if city.lower() == "utc" or city.lower() == "gmt":
+async def loctime(ctx, *city: str):
+    c = ""
+    for i in city:
+        c = c + i + " "
+    if c.lower() == "utc " or c.lower() == "gmt ":
         utc = str(datetime.datetime.utcnow())
         await client.say(("UTC / GMT\n\n    {}\n    {}/{}/{}").format(utc[11:19],utc[5:7],utc[8:10],utc[0:4]))
     else:
         owm = pyowm.OWM(options.owm())
         try:
-            if len(ctry) > 0:
-                observation = owm.weather_at_place(city + "," + ctry)
-            else:
-                observation = owm.weather_at_place(city)
+                observation = owm.weather_at_place(c)
         except:
             await client.say("City not found.")
             return
