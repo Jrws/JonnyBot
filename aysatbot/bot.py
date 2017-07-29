@@ -219,9 +219,9 @@ async def improv(ctx, option: str):
 
 @client.command(pass_context=True,description="Set turn order for games")
 async def order(ctx, *players):
-    try:
-        global turns, last
-        s = ctx.message.server.id
+    global turns, last
+    s = ctx.message.server.id
+    if len(players) != 0:
         turns[s] = []
         for i in players:
             if ctx.message.server.get_member(i.replace("!","")[2:-1]) != None:
@@ -234,8 +234,20 @@ async def order(ctx, *players):
                 return
         last[s] = turns[s][-1]
         await client.say("Order set!")
-    except IndexError:
-        await client.say("Player list not given.")
+    else:
+        if s not in turns:
+            await client.say("Order not set yet.")
+        elif turns[s] == []:
+            await client.say("Order is blank.")
+        else:
+            ppl = ""
+            o = []
+            for i in turns[s]:
+                o.append(ctx.message.server.get_member(i))
+            for x in o:
+                ppl = ppl + ", {0.mention}".format(x)
+            ppl = ppl[2:]
+            await client.say(ppl)
 
 @client.command(pass_context=True,description="Who do you really like?")
 async def who(ctx):
@@ -244,24 +256,30 @@ async def who(ctx):
 tem = {'id':'f/c/k'}
 
 @client.command(pass_context=True,description="Temperature mode settings")
-async def temp(ctx, mode: str):
+async def temp(ctx, mode=""):
     global tem
     s = ctx.message.server.id
-    if mode.lower() == "f":
-        tem[s] = "f"
-        await client.say("Temperature mode set to `F`.")
-    elif mode.lower() == "c":
-        tem[s] = "c"
-        await client.say("Temperature mode set to `C`.")
-    elif mode.lower() == "k":
-        tem[s] == "k"
-        await client.say("Temperature mode set to `K`.")
+    if mode != "":
+        if mode.lower() == "f":
+            tem[s] = "f"
+            await client.say("Temperature mode set to `F`.")
+        elif mode.lower() == "c":
+            tem[s] = "c"
+            await client.say("Temperature mode set to `C`.")
+        elif mode.lower() == "k":
+            tem[s] == "k"
+            await client.say("Temperature mode set to `K`.")
+        else:
+            await client.say("Unknown temperature mode.")
     else:
-        await client.say("Unknown temperature mode.")
+        if s not in tem:
+            tem[s] = "f"
+        await client.say("Temperature mode is `{}`.".format(tem[s].upper()))
 
 @client.command(pass_context=True,description="Weather forecast")
 async def weather(ctx, *city: str):
     global tem
+    tem[ctx.message.server.id] = "f"
     try:
         owm = pyowm.OWM(options.owm())
         c = ""
@@ -389,6 +407,18 @@ async def loctime(ctx, *city: str):
 
         await client.say(("{}\n    {}:{}:{} {}\n    {}/{}/{}\n    {}").format(loc,hr,minu,sec,m,mon,day,year,resp["timeZoneName"]))
 
+returnim = {'user':'True/False'}
+@client.command(pass_context=True,description="Opt in and out of JonnyBot's I'm returner")
+async def opt(ctx, option: str):
+    if option.lower() == "in":
+        returnim[ctx.message.author.id] = True
+        await client.say("{0.author.mention}, you have jopted in!".format(ctx.message))
+    elif option.lower() == "out":
+        returnim[ctx.message.author.id] = False
+        await client.say("{0.author.mention}. you have jopted out!".format(ctx.message))
+    else:
+        await client.say('Incorrect usage, do `~opt in` to opt in and `~opt out` to opt out.')
+
 @client.event
 async def on_message(message):
     global story, game, last
@@ -403,19 +433,22 @@ async def on_message(message):
         if message.author.id != message.server.me.id and message.content[0] not in [bot_prefix,"!"] and "?" not in message.content and len(message.content) > 4 and " " in message.content:
             if random.randint(1,100) == 1:
                 await client.send_message(message.channel, '{0.author.mention}, are you sure about that?'.format(message))
-        if "im" in message.content.lower().replace("'","") or "i am" in message.content.lower():
-            if message.content.lower()[0:4] == "i'm ":
-                await client.send_message(message.channel, "Hi, " + message.content[4:])
-            elif message.content.lower()[0:3] == "im ":
-                await client.send_message(message.channel, "Hi, " + message.content[3:])
-            elif message.content.lower()[0:5] == "i am ":
-                await client.send_message(message.channel, "Hi, " + message.content[5:])
-            else:
-                x = re.sub(r'[^a-zA-Z0-9\s]', '', message.content.lower())
-                if " im " in x:
-                    await client.send_message(message.channel,"Hi, " + x[x.index(" im ")+4:])
-                elif " i am " in  x:
-                    await client.send_message(message.channel,"Hi, " + x[x.index(" i am ")+6:])
+        if "im" in message.content.lower().replace("'","") or "i am" in message.content.lower() and message.author.id in returnim:
+            if message.author.id not in returnim:
+                returnim[message.author.id] = False
+            if returnim[message.author.id] == True:
+                if message.content.lower()[0:4] == "i'm ":
+                    await client.send_message(message.channel, "Hi, " + message.content[4:])
+                elif message.content.lower()[0:3] == "im ":
+                    await client.send_message(message.channel, "Hi, " + message.content[3:])
+                elif message.content.lower()[0:5] == "i am ":
+                    await client.send_message(message.channel, "Hi, " + message.content[5:])
+                else:
+                    x = re.sub(r'[^a-zA-Z0-9\s]', '', message.content.lower())
+                    if " im " in x:
+                        await client.send_message(message.channel,"Hi, " + x[x.index(" im ")+4:])
+                    elif " i am " in  x:
+                        await client.send_message(message.channel,"Hi, " + x[x.index(" i am ")+6:])
         if message.server.id not in story:
             story[message.server.id] = []
             game[message.server.id] = False
