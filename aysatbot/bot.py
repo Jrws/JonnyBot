@@ -7,6 +7,7 @@ import datetime
 import time
 import requests
 import json
+import os
 
 from discord.ext import commands
 from info import options
@@ -32,7 +33,7 @@ jny = ["aysat","AND HIS NAME IS JOHN CENA!!!","Are you sure about that?","Bruh",
 
 ga = ["Wau","Harsh","Wau harsh","Lol","Yup","STAHP","HAHA","*shrugs*","Oh","IM DONE","Uhh...","Yey","YAASSSSSS","DAMN"]
 
-cous = open("C:\\Users\\Jonny\\Documents\\GitHub\\JonnyBot\\aysatbot\\countries.txt","r",encoding='utf8')
+cous = open(os.path.join(os.path.dirname(__file__),"countries.txt"))
 coulist = cous.readlines()
 cous.close()
 
