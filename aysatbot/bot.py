@@ -22,7 +22,7 @@ aly = ["Go scotts!", "I LOVE CATS THEYRE SO CUTE@@@@@@@@", "YOURE KILLING POLAR 
 
 jo = ["Lol","Lol","Lol","Lol","Lol","Lol","Lol","Lol","Lol","Lol","Lol","Lol","Lol","Lol","Lol","Lol","Lol","Lol","Lol","Lol","Lo\n*l","Lpl\n*Lol","Lpl\n*Lpl\n**Lol",  "WE MUST SEIZE THE MEANS OF SOCIAL GRATIFICATION"]
 
-kw = ["Annoying and unoriginal","Good question","#discordmasterrace"]
+kw = ["Annoying and unoriginal","Good question","#discordmasterrace","salty af"]
 
 al = ["K","Wau","K then","Bro rip","Um"]
 
