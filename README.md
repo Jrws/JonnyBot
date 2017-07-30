@@ -3,14 +3,23 @@ Game, Music, Satire
 
 ## Current Projects
   + Never Have I Ever implementation
-  + Time zone finder (search-by-city)
-  + Improv turn order update
-  + Polishing up music bot commands
+  + Possible Cards Against Humanity implementation?
+  + Polishing up music bot
   + Speech emulation for Kevin M, Vern, Aaron, Gabby, Colin
-  + Relative paths
-  + Actually using github
 
 ## Releases
+
+### v1.1.1
+  + Local time finder
+  + Turn order for improv and marking input words with a check
+  + New ~temp command instead of specifying temp mode for ~weather
+  + Better security
+  + Relative paths (finally!)
+  + Opt in and out for response to "I'm"
+  + Added speech emulation for Gabby
+  + You can now do ~add instead of ~play or ~p now, but not ~a
+  + Other minor updates
+  + Removed truth, dare, and wyr (temporarily)
 
 ### v1.1.0
   + Implemented music-playing capabilities
