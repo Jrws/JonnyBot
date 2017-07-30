@@ -6,6 +6,7 @@ Game, Music, Satire
   + Possible Cards Against Humanity implementation?
   + Polishing up music bot
   + Speech emulation for Kevin M, Vern, Aaron, Gabby, Colin
+  + Better code
 
 ## Releases
 
