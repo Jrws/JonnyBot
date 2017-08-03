@@ -103,7 +103,7 @@ async def gab(ctx):
     rand = random.choice(ga)
     await client.say(rand)
     await client.delete_message(ctx.message)
-    
+
 areya = False
 @client.command(pass_context=True,description="Toggles 'Are you sure about that' spam; only works in '#nsfw-spam'")
 async def aysat(ctx):
@@ -435,6 +435,7 @@ cahpoints = {'serv id':['points (same index as players above)']}
 cahhands = {'serv id':[ ['white cards (same index as players above)'],['...'] ]}
 cahresp = {'serv id':['True/False for having picked or not (same index as players above)']}
 cahczar = {'serv id':'player'}
+cahplaying = {'user id':'serv id'}
 #also gonna use turns and last
 
 @client.command(pass_context=True,description="Cards Against Humanity!")
@@ -459,17 +460,22 @@ async def cah(ctx, option: str):
             cahpoints[s] = [0 for x in range(len(turns[s]))]
             cahhands[s] = [[] for x in range(len(turns[s]))]
             cahgame[s] = True
+            for p in cahplayers[s]:
+                cahplaying[p] = s
             await client.say("Starting a game of Cards Against Humanity!")
-            cahczar[s] = ctx.message.server.get_member(turns[s][0])
+            cahczar[s] = ctx.message.server.get_member(cahplayers[s][0])
             await client.say("Card Czar: {0.mention}".format(cahczar[s]))
             cahcb[s] = blackCards
             random.shuffle(cahcb[s])
             cahcw[s] = whiteCards #use list.pop(index)
             random.shuffle(cahcw[s])
             bc = cahcb[s].pop()
+            await client.say("```css\n{}\n```".format(bc))
+            pick = bc.count("_")
+            if pick == 0:
             for index in range(len(cahplayers[s])):
+                pm = ctx.message.server.get_member(cahplayers[s][index])
                 if cahplayers[s][index] != cahczar[s].id:
-                    pm = ctx.message.server.get_member(cahplayers[s][index])
                     bcmessage = "-CAH-```css\n{}\n```\nYour cards:\n\n".format(bc)
                     for j in range(10):
                         cahhands[s][index].append(cahcw[s].pop())
@@ -481,9 +487,10 @@ async def cah(ctx, option: str):
                         else:
                             mess += "\n" + '```{}) {}```'.format(cnt,k)
                         cnt += 1
-                    mess = bcmessage + mess
+                    mess = bcmessage + mess + "\nPick `" + str(pick) + "`!"
                     await client.send_message(pm,mess)
-
+                else:
+                    await client.send_message(pm,"-CAH-```css\n{}\n```\nYou are the Card Czar!".format(bc))
         else:
             await client.say("Cannot restart while game is in progress!")
     elif option.lower() == "pause":
@@ -558,7 +565,7 @@ async def on_message(message):
                     await client.add_reaction(message,"✅")
 
         else: #if's it's a dm
-            pass
+
     await client.process_commands(message)
 
 client.run(options.token())
