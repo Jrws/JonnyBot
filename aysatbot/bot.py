@@ -17,7 +17,6 @@ bot_prefix = "~"
 
 client = commands.Bot(description=description, command_prefix=bot_prefix)
 
-a = False
 aly = ["Go scotts!", "I LOVE CATS THEYRE SO CUTE@@@@@@@@", "YOURE KILLING POLAR BEARS", "JUPITER DOESN'T HAVE FEELINGS","Tr#@!%","KILL YOURSELFFFFFFFFFFF","Water your plant!","RUDEEEE!","😂😂😂 lol!","GO DIE IN A HOLE!!!!","FIGHT ME","Yus!","GDP","FKENWO-","FNEKDKS","TBEICNE","YOU WRETCHED BAFFONS!!!!","Rhanks!","ASDLKFJASLDFA","ASFJAALSKDFJ","ASDFLKJASDF","ASDFAGSZSEF","KILL YOUR ELF",
 "ASJDKFASDFKLJASDFAWERFAESFSRFSFCXSCVZSCRVCSCVCZ", "VERLYSSA ISN'T REAL@@@@@@@@", "I HATE YOU@@@@@@", "YOU GITA SUCK@@@@@", "NOOOOOK", "HEYYYYYY","GALEXXXXXXXXXXXXX","ALEX ONLY HAS FEELINGS FOR GABBYYYYYYYY@@@@@@@@@@@@","FKANFBWOX","NOOOOOOOOOOO!!!!!!!!","*rolls eyes*","*nods*","DJFALSK DFJAS","VICTORYYYY"]
 
@@ -33,107 +32,118 @@ jny = ["aysat","AND HIS NAME IS JOHN CENA!!!","Are you sure about that?","Bruh",
 
 ga = ["Wau","Harsh","Wau harsh","Lol","Yup","STAHP","HAHA","*shrugs*","Oh","IM DONE","Uhh...","Yey","YAASSSSSS","DAMN"]
 
-cous = open(os.path.join(os.path.dirname(__file__),"countries.txt"))
+cous = open(os.path.join(os.path.dirname(__file__),"countries.txt"),encoding="utf8")
 coulist = cous.readlines()
 cous.close()
+
+bcList = open(os.path.join(os.path.dirname(__file__),"blackcards.txt"),encoding="utf8")
+blackCards = bcList.readlines()
+bcList.close()
+for i in range(len(blackCards)):
+    blackCards[i] = blackCards[i][:-1]
+wcList = open(os.path.join(os.path.dirname(__file__),"whitecards.txt"),encoding="utf8")
+whiteCards = wcList.readlines()
+wcList.close()
+for i in range(len(whiteCards)):
+    whiteCards[i] = whiteCards[i][:-1]
 
 cc = {"abbreviation":"country name"}
 for line in coulist:
     x = line.index(":")
     cc[line[0:x]] = line[x+1:]
 
-mem = []
-
 @client.event
 async def on_ready():
-    global mem
     print("------")
     print("Logged in as")
     print(client.user.name)
     print(client.user.id)
     print(discord.__version__)
     print("------")
-    #print(client.servers)
-    """for serv in client.servers:
-        for em in serv.emojis:
-            print(em.id)"""
 
 @client.command(pass_context=True,description="Simulates Alyssa's speech patterns with 100% accuracy",categories="test")
 async def alyssa(ctx):
     for i in range(0,3):
         rand = random.choice(aly)
         await client.say(rand)
+    await client.delete_message(ctx.message)
 
 @client.command(pass_context=True,description="Simulates Joe's speech patterns with 100% accuracy")
 async def joe(ctx):
     rand = random.choice(jo)
     await client.say(rand)
+    await client.delete_message(ctx.message)
 
 @client.command(pass_context=True,description="Simulates Kevin W's speech patterns with 100% accuracy")
 async def kevw(ctx):
     rand = random.choice(kw)
     await client.say(rand)
+    await client.delete_message(ctx.message)
 
 @client.command(pass_context=True,description="Simulates Alex's speech patterns with 100% accuracy")
 async def alex(ctx):
     rand = random.choice(al)
     await client.say(rand)
+    await client.delete_message(ctx.message)
 
 @client.command(pass_context=True,description="Simulates Owen's speech patterns with 100% accuracy")
 async def owen(ctx):
     rand = random.choice(ow)
     await client.say(rand)
+    await client.delete_message(ctx.message)
 
 @client.command(pass_context=True,description="Simulates Jonny's speech patterns with 100% accuracy")
 async def jon(ctx):
     rand = random.choice(jny)
     await client.say(rand)
+    await client.delete_message(ctx.message)
 
 @client.command(pass_context=True,description="Simulates Gabby's speech patterns with 100% accuracy")
 async def gab(ctx):
     rand = random.choice(ga)
     await client.say(rand)
-
+    await client.delete_message(ctx.message)
+    
+areya = False
 @client.command(pass_context=True,description="Toggles 'Are you sure about that' spam; only works in '#nsfw-spam'")
 async def aysat(ctx):
     if ctx.message.channel.name == "nsfw-spam":
-        global a
-        a = not a
-        if a == True:
+        global areya
+        areya = not areya
+        if areya == True:
             await client.say("[aysat: ON]")
         else:
             await client.say("[aysat: OFF]")
-
-story = {'id': ["list"]}
-game = {'id': "True/False"}
 turns = {'id': ["players"]}
 last = {'id':"player"}
+
+impstory = {'id': ["list"]}
+impgame = {'id': "True/False"}
 impord = {"id":"True/False"}
 
 @client.command(pass_context=True,description="For Improv games:\n\nstart: starts Improv game\nstop: ends Improv game\nresume: resumes the Improv game\ndelete: deletes last entry\nstory: prints the Improv story")
 async def improv(ctx, option: str):
-    global story, game, impord, turns
     s = ctx.message.server.id
     if s not in impord:
         impord[s] = False
     if s not in turns:
         turns[s] = ["None"]
-    if s not in story:
-        story[s] = []
-        game[s] = False
-    if option == "start":
-        if not game[s]:
-            game[s] = True
-            story[s] = []
+    if s not in impstory:
+        impstory[s] = []
+        impgame[s] = False
+    if option == "restart":
+        if not impgame[s]:
+            impgame[s] = True
+            impstory[s] = []
             await client.say("Improv beginning now!")
         else:
-            await client.say("Improv game already in progress!")
+            await client.say("Cannot restart when game is already in progress!")
     elif option == "stop":
-        if game[s]:
-            game[s] = False
+        if impgame[s]:
+            impgame[s] = False
             para = ""
             await client.say("Finishing...")
-            for i in story[s]:
+            for i in impstory[s]:
                 if i[0:3] == "++.":
                     j = i[3:]
                 else:
@@ -151,7 +161,7 @@ async def improv(ctx, option: str):
             await client.say("Improv game not detected.")
     elif option == "story":
         para = ""
-        for i in story[s]:
+        for i in impstory[s]:
             if i[0:3] == "++.":
                 j = i[3:]
             else:
@@ -166,19 +176,19 @@ async def improv(ctx, option: str):
                 para += " " + j
         await client.say(para)
     elif option == "delete":
-        if game[s]:
-            await client.say('Deleting "%s"...' % story[s][-1][1:])
-            story[s] = story[s][:-1]
+        if impgame[s]:
+            await client.say('Deleting "%s"...' % impstory[s][-1][1:])
+            impstory[s] = impstory[s][:-1]
         else:
             await client.say("Improv game not in progress.")
     elif option == "resume":
-        if not game[s]:
-            game[s] = True
+        if not impgame[s]:
+            impgame[s] = True
             await client.say("Improv resuming now!")
         else:
             await client.say("Improv game already in progress!")
     elif option == "order":
-        if game[s]:
+        if impgame[s]:
             if s in turns:
                 impord[s] = not impord[s]
                 if impord[s]:
@@ -188,10 +198,10 @@ async def improv(ctx, option: str):
             else:
                 await client.say("Order not set yet. (type ~order player1 player2 ... to set order)")
         else:
-            await client.say("Improv game not in progress.")
+            await client.say("Improv impgame not in progress.")
     elif option == "turn":
         try:
-            if game[s] and impord[s]:
+            if impgame[s] and impord[s]:
                 o = []
                 ppl = ""
                 for i in turns[s]:
@@ -220,7 +230,6 @@ async def improv(ctx, option: str):
 
 @client.command(pass_context=True,description="Set turn order for games")
 async def order(ctx, *players):
-    global turns, last
     s = ctx.message.server.id
     if len(players) != 0:
         turns[s] = []
@@ -258,7 +267,6 @@ tem = {'id':'f/c/k'}
 
 @client.command(pass_context=True,description="Temperature mode settings")
 async def temp(ctx, mode=""):
-    global tem
     s = ctx.message.server.id
     if mode != "":
         if mode.lower() == "f":
@@ -279,7 +287,6 @@ async def temp(ctx, mode=""):
 
 @client.command(pass_context=True,description="Weather forecast")
 async def weather(ctx, *city: str):
-    global tem
     tem[ctx.message.server.id] = "f"
     try:
         owm = pyowm.OWM(options.owm())
@@ -420,64 +427,138 @@ async def opt(ctx, option: str):
     else:
         await client.say('Incorrect usage, do `~opt in` to opt in and `~opt out` to opt out.')
 
+cahgame = {'serv id':'True/False'}
+cahcb = {'serv id':['black cards']}
+cahcw = {'serv id':['white cards']}
+cahplayers = {'serv id':['players']}
+cahpoints = {'serv id':['points (same index as players above)']}
+cahhands = {'serv id':[ ['white cards (same index as players above)'],['...'] ]}
+cahresp = {'serv id':['True/False for having picked or not (same index as players above)']}
+cahczar = {'serv id':'player'}
+#also gonna use turns and last
+
+@client.command(pass_context=True,description="Cards Against Humanity!")
+async def cah(ctx, option: str):
+    s = ctx.message.server.id
+    if s not in cahgame:
+        cahgame[s] = False
+    if s not in cahplayers:
+        cahplayers[s] = []
+        cahpoints[s] = []
+        cahczar[s] = ""
+        cahhands[s] = []
+    if s not in cahcb:
+        cahcb[s] = []
+        cahcw[s] = []
+    if s not in turns:
+        await client.say("Set an order first! (AKA list of players)")
+        return
+    if option.lower() == "restart":
+        if not cahgame[s]:
+            cahplayers[s] = turns[s]
+            cahpoints[s] = [0 for x in range(len(turns[s]))]
+            cahhands[s] = [[] for x in range(len(turns[s]))]
+            cahgame[s] = True
+            await client.say("Starting a game of Cards Against Humanity!")
+            cahczar[s] = ctx.message.server.get_member(turns[s][0])
+            await client.say("Card Czar: {0.mention}".format(cahczar[s]))
+            cahcb[s] = blackCards
+            random.shuffle(cahcb[s])
+            cahcw[s] = whiteCards #use list.pop(index)
+            random.shuffle(cahcw[s])
+            bc = cahcb[s].pop()
+            for index in range(len(cahplayers[s])):
+                if cahplayers[s][index] != cahczar[s].id:
+                    pm = ctx.message.server.get_member(cahplayers[s][index])
+                    bcmessage = "-CAH-```css\n{}\n```\nYour cards:\n\n".format(bc)
+                    for j in range(10):
+                        cahhands[s][index].append(cahcw[s].pop())
+                    mess = ""
+                    cnt = 1
+                    for k in cahhands[s][index]:
+                        if mess == "":
+                            mess += '```{}) {}```'.format(cnt,k)
+                        else:
+                            mess += "\n" + '```{}) {}```'.format(cnt,k)
+                        cnt += 1
+                    mess = bcmessage + mess
+                    await client.send_message(pm,mess)
+
+        else:
+            await client.say("Cannot restart while game is in progress!")
+    elif option.lower() == "pause":
+        if cahgame[s]:
+            cahgame[s] = False
+            await client.say(":pause_button: Cards Against Humanity")
+        else:
+            await client.say("Cannot pause when game is already paused!")
+    elif option.lower() == "resume":
+        if not cahgame[s] and cahplayers != []:
+            cahgame[s] = True
+            await client.say(":arrow_forward: Cards Against Humanity")
+        elif cahplayers == []:
+            await client.say("No CAH game currently exists!")
+        else:
+            await client.say("CAH game is already in progress")
 @client.event
 async def on_message(message):
-    global story, game, last
     if message.author.id != client.user.id and message.author.id != "325108081241489408":
-        if message.author.id != message.server.me.id and message.content[0] not in [bot_prefix,"!"] and a == 1 and "?" not in message.content and message.channel.name=="nsfw-spam":
-            await client.send_message(message.channel, '{0.author.mention}, are you sure about that?'.format(message))
-        """if "game night" in message.content.lower() and message.channel.name == "game-night":
-            gn = message.server.roles
-            for i in gn:
-                if i.name == "game-night":
-                    await client.send_message(message.channel, "{0.mention}".format(i))"""
-        if message.author.id != message.server.me.id and message.content[0] not in [bot_prefix,"!"] and "?" not in message.content and len(message.content) > 4 and " " in message.content:
-            if random.randint(1,100) == 1:
+        if message.server != None: #if it's a server
+            #aysat spam for #nsfw-spam
+            if message.author.id != message.server.me.id and message.content[0] not in [bot_prefix,"!"] and areya == True and "?" not in message.content and message.channel.name=="nsfw-spam":
                 await client.send_message(message.channel, '{0.author.mention}, are you sure about that?'.format(message))
-        if "im" in message.content.lower().replace("'","") or "i am" in message.content.lower() and message.author.id in returnim:
-            if message.author.id not in returnim:
-                returnim[message.author.id] = False
-            if returnim[message.author.id] == True:
-                if message.content.lower()[0:4] == "i'm ":
-                    await client.send_message(message.channel, "Hi, " + message.content[4:])
-                elif message.content.lower()[0:3] == "im ":
-                    await client.send_message(message.channel, "Hi, " + message.content[3:])
-                elif message.content.lower()[0:5] == "i am ":
-                    await client.send_message(message.channel, "Hi, " + message.content[5:])
-                else:
-                    x = re.sub(r'[^a-zA-Z0-9\s]', '', message.content.lower())
-                    if " im " in x:
-                        await client.send_message(message.channel,"Hi, " + x[x.index(" im ")+4:])
-                    elif " i am " in  x:
-                        await client.send_message(message.channel,"Hi, " + x[x.index(" i am ")+6:])
-        if message.server.id not in story:
-            story[message.server.id] = []
-            game[message.server.id] = False
-        if game[message.server.id] == True:
-            if message.content[0] == "." and message.content[1] != ".":
-                if impord[message.server.id] == True:
-                    if turns[message.server.id].index(message.author.id)-1 >= 0:
-                        if last[message.server.id] == turns[message.server.id][turns[message.server.id].index(message.author.id)-1]:
-                            story[message.server.id].append(message.content)
-                            last[message.server.id] = message.author.id
-                            await client.add_reaction(message,"✅")
-                        else:
-                            await client.send_message(message.channel, "{0.author.mention}, it's not your turn!".format(message))
+            #occasionally saying aysat to something
+            if message.author.id != message.server.me.id and message.content[0] not in [bot_prefix,"!"] and "?" not in message.content and len(message.content) > 4 and " " in message.content:
+                if random.randint(1,100) == 1:
+                    await client.send_message(message.channel, '{0.author.mention}, are you sure about that?'.format(message))
+            #i'm response
+            if "im" in message.content.lower().replace("'","") or "i am" in message.content.lower() and message.author.id in returnim:
+                if message.author.id not in returnim: #opt in and out support
+                    returnim[message.author.id] = False
+                if returnim[message.author.id] == True:
+                    if message.content.lower()[0:4] == "i'm ":
+                        await client.send_message(message.channel, "Hi, " + message.content[4:])
+                    elif message.content.lower()[0:3] == "im ":
+                        await client.send_message(message.channel, "Hi, " + message.content[3:])
+                    elif message.content.lower()[0:5] == "i am ":
+                        await client.send_message(message.channel, "Hi, " + message.content[5:])
                     else:
-                        if last[message.server.id] == turns[message.server.id][-1]:
-                            story[message.server.id].append(message.content)
-                            last[message.server.id] = message.author.id
-                            await client.add_reaction(message,"✅")
+                        x = re.sub(r'[^a-zA-Z0-9\s]', '', message.content.lower())
+                        if " im " in x:
+                            await client.send_message(message.channel,"Hi, " + x[x.index(" im ")+4:])
+                        elif " i am " in  x:
+                            await client.send_message(message.channel,"Hi, " + x[x.index(" i am ")+6:])
+            #making improv work
+            if message.server.id not in impstory:
+                impstory[message.server.id] = []
+                impgame[message.server.id] = False
+            if impgame[message.server.id] == True:
+                if message.content[0] == "." and message.content[1] != ".":
+                    if impord[message.server.id] == True:
+                        if turns[message.server.id].index(message.author.id)-1 >= 0:
+                            if last[message.server.id] == turns[message.server.id][turns[message.server.id].index(message.author.id)-1]:
+                                impstory[message.server.id].append(message.content)
+                                last[message.server.id] = message.author.id
+                                await client.add_reaction(message,"✅")
+                            else:
+                                await client.send_message(message.channel, "{0.author.mention}, it's not your turn!".format(message))
                         else:
-                            await client.send_message(message.channel, "{0.author.mention}, it's not your turn!".format(message))
-                else:
-                    story[message.server.id].append(message.content)
+                            if last[message.server.id] == turns[message.server.id][-1]:
+                                impstory[message.server.id].append(message.content)
+                                last[message.server.id] = message.author.id
+                                await client.add_reaction(message,"✅")
+                            else:
+                                await client.send_message(message.channel, "{0.author.mention}, it's not your turn!".format(message))
+                    else:
+                        impstory[message.server.id].append(message.content)
+                        await client.add_reaction(message,"✅")
+                #force add
+                if message.content[0:3] == "++.":
+                    impstory[message.server.id].append(message.content)
                     await client.add_reaction(message,"✅")
-            if message.content[0:3] == "++.":
-                story[message.server.id].append(message.content)
-                await client.add_reaction(message,"✅")
-        if "somebody" in message.content.lower() or "someone" in message.content.lower():
-            await client.send_message(message.channel,"AND HIS NAME IS JOHN CENA!!!!!!!!!!!!!")
+
+        else: #if's it's a dm
+            pass
     await client.process_commands(message)
 
 client.run(options.token())
