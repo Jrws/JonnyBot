@@ -1818,7 +1818,6 @@ class MusicBot(discord.Client):
         return Response(':put_litter_in_its_place:', delete_after=20)
 
     async def cmd_skip(self, player, channel, author, message, permissions, voice_channel):
-        print(player.current_entry.meta.get('author', False))
         """
         Usage:
             {command_prefix}skip
@@ -1898,7 +1897,6 @@ class MusicBot(discord.Client):
             )
 ################################
     async def cmd_s(self, player, channel, author, message, permissions, voice_channel):
-        print(player.current_entry.meta.get('author', False))
         """
         Usage:
             {command_prefix}skip
