@@ -441,6 +441,8 @@ cahplaying = {'user id':'serv id'}
 cahblack = {'serv id':'current black card'}
 cahpick = {'serv id':'# of cards to pick (int)'}
 cahchannel = {'serv id':'channel'}
+cahresults = {'serv id':{'choice content':'user'}}
+cahchoices = {'serv id':['options']}
 #also gonna use turns and last
 
 @client.command(pass_context=True,description="Cards Against Humanity!")
@@ -488,8 +490,8 @@ async def cah(ctx, option: str):
             if cahpick[s] == 0:
                 cahpick[s] = 1
             for index in range(len(cahplayers[s])):
+                pm = ctx.message.server.get_member(cahplayers[s][index])
                 try:
-                    pm = ctx.message.server.get_member(cahplayers[s][index])
                     if cahplayers[s][index] != cahczar[s].id:
                         bcmessage = "-CAH-```css\n{}\n```\nYour cards:\n\n".format(cahblack[s])
                         for j in range(10):
@@ -502,13 +504,16 @@ async def cah(ctx, option: str):
                             else:
                                 mess += "\n" + '```{}) {}```'.format(cnt,k)
                             cnt += 1
-                        mess = bcmessage + mess + "\nPick `" + str(cahpick[s]) + "`!"
+                        if cahpick[s] == 1:
+                            mess = bcmessage + mess + "\nPick `" + str(cahpick[s]) + "`card!"
+                        else:
+                            mess = bcmessage + mess + "\nPick `" + str(cahpick[s]) + "`cards!"
                         await client.send_message(pm,mess)
                         cahresp[s][index] = False
                     else:
                         await client.send_message(pm,"-CAH-```css\n{}\n```\nYou are the Card Czar!".format(cahblack[s]))
                 except:
-                    await client.say("And error occured.") #make better
+                    await client.say("An error occured sending a message to {0.mention}.".format(pm))
         else:
             await client.say("Cannot restart while game is in progress!")
     elif option.lower() == "pause":
@@ -594,47 +599,90 @@ async def on_message(message):
                     s = cahplaying[message.author.id]
                     p = cahplayers[s].index(message.author.id)
                     if not cahresp[s][p]:
-                        picked = message.content.split(" ")
-                        try:
-                            picked = [int(x) - 1 for x in picked]
-                        except ValueError:
-                            await client.send_message(message.author,"Invalid value given.")
-                            return
-                        for i in picked:
-                            if i > 9 or i < 0:
-                                await client.send_message(message.author,"Please choose values from 1 to 10.")
+                        if message.author != cahczar[s]:
+                            picked = message.content.split(" ")
+                            try:
+                                picked = [int(x) - 1 for x in picked]
+                            except ValueError:
+                                await client.send_message(message.author,"Invalid value given.")
                                 return
-                        if len(picked) != cahpick[s]:
-                            await client.send_message(message.author,"Please pick `{}` cards.".format(cahpick[s]))
-                        else:
-                            confirm = await client.send_message(message.author,"Are you sure about that?")
-                            await client.add_reaction(confirm,'👍')
-                            await client.add_reaction(confirm,'👎')
-                            rxn = await client.wait_for_reaction(emoji=['👍','👎'],message=confirm,timeout=30,user=message.author)
-                            if rxn == None:
-                                await client.remove_reaction(confirm,'👍',client.user)
-                                await client.remove_reaction(confirm,'👎',client.user)
-                            elif rxn.reaction.emoji == '👍':
+                            for i in picked:
+                                if i > 9 or i < 0:
+                                    await client.send_message(message.author,"Please choose values from 1 to 10.")
+                                    return
+                            if len(picked) != cahpick[s]:
+                                if cahpick[s] != 1:
+                                    await client.send_message(message.author,"Please pick `{}` cards.".format(cahpick[s]))
+                                else:
+                                    await client.send_message(message.author,"Please pick `{}` card.".format(cahpick[s]))
+                            else:
+                                m = "```"
                                 for i in picked:
-                                    cahpicked[s][p].append(cahhands[s][p][i])
-                                cahresp[s][p] = True
-                                await client.send_message(client.get_server(s).get_channel(cahchannel[s]),"{0.author.mention} is done picking!".format(message))
-                                await client.remove_reaction(confirm,'👍',client.user)
-                                await client.remove_reaction(confirm,'👎',client.user)
-                                if all(cahresp[s]):
-                                    results = []
-                                    for x in cahpicked[s]:
-                                        mess = "```"
-                                        for cards in x:
-                                            mess += cards + "``````"
-                                        mess = mess[:-3]
-                                        results.append(mess)
-                                    results = "\n".join(results)
-                                    await client.send_message(client.get_server(s).get_channel(cahchannel[s]),results)
-                            elif rxn.reaction.emoji == '👎':
-                                await client.send_message(message.author,"Please try again.")
-                                await client.remove_reaction(confirm,'👍',client.user)
-                                await client.remove_reaction(confirm,'👎',client.user)
+                                    m += cahhands[s][p][i] + "``````"
+                                m = m[:-3]
+                                confirm = await client.send_message(message.author,"{} Are you sure about that?".format(m))
+                                await client.add_reaction(confirm,'👍')
+                                await client.add_reaction(confirm,'👎')
+                                rxn = await client.wait_for_reaction(emoji=['👍','👎'],message=confirm,timeout=30,user=message.author)
+                                if rxn == None:
+                                    await client.remove_reaction(confirm,'👍',client.user)
+                                    await client.remove_reaction(confirm,'👎',client.user)
+                                    await client.send_message(message.author,"Confirmation timed out. Please try again.")
+                                elif rxn.reaction.emoji == '👍':
+                                    for i in picked:
+                                        cahpicked[s][p].append(cahhands[s][p][i])
+                                    cahresp[s][p] = True
+                                    await client.send_message(client.get_server(s).get_channel(cahchannel[s]),"{0.author.mention} is done picking!".format(message))
+                                    await client.remove_reaction(confirm,'👎',client.user)
+                                    await client.send_message(message.author,"Success!")
+                                    if all(cahresp[s]):
+                                        cahresults[s] = {}
+                                        for x,y in zip(cahpicked[s],cahplayers[s]):
+                                            if x != []:
+                                                mess = "```"
+                                                for cards in x:
+                                                    mess += cards + "``````"
+                                                mess = mess[:-3]
+                                                cahresults[s][mess] = y
+                                        cahchoices[s] = list(cahresults[s].keys())
+                                        random.shuffle(cahchoices[s])
+                                        sendmain = "```css\n{}\n```\n{}".format(cahblack[s],"\n".join(cahchoices[s]))
+                                        for c,n in zip(cahchoices[s],range(len(cahchoices[s]))):
+                                            cahchoices[s][n] = "{}) {}".format(n+1,c)
+                                        send = "```css\n{}\n```\n{}".format(cahblack[s],"\n".join(cahchoices[s]))
+                                        await client.send_message(client.get_server(s).get_channel(cahchannel[s]),sendmain)
+                                        await client.send_message(cahczar[s],send)
+                                        await client.send_message(cahczar[s],"Pick your favorite!")
+                                        cahresp[s][cahplayers[s].index(cahczar[s].id)] = False
+                                elif rxn.reaction.emoji == '👎':
+                                    await client.send_message(message.author,"Please try again.")
+                                    await client.remove_reaction(confirm,'👍',client.user)
+                        else:
+                            try:
+                                picked = int(message.content) - 1
+                            except ValueError:
+                                await client.send_message(message.author,"Invalid value given.")
+                                return
+                            try:
+                                answer = cahchoices[s][picked][cahchoices[s][picked].index(")")+2:]
+                                confirm = await client.send_message(message.author,"{} Are you sure about that?".format(m))
+                                await client.add_reaction(confirm,'👍')
+                                await client.add_reaction(confirm,'👎')
+                                rxn = await client.wait_for_reaction(emoji=['👍','👎'],message=confirm,timeout=30,user=message.author)
+                                if rxn == None:
+                                    await client.remove_reaction(confirm,'👍',client.user)
+                                    await client.remove_reaction(confirm,'👎',client.user)
+                                    await client.send_message(message.author,"Confirmation timed out. Please try again.")
+                                elif rxn.reaction.emoji == '👍':
+                                    winner = cahresults[s][answer]
+                                    await client.remove_reaction(confirm,'👎',client.user)
+                                    await client.send_message(message.author,"Success!")
+                                    await client.send_message(message.author,"{0.mention} won the round!".format(client.get_server(s).get_member(winner)))
+                                elif rxn.reaction.emoji == "👎":
+                                    await client.send_message(message.author,"Please try again.")
+                                    await client.remove_reaction(confirm,'👍',client.user)
+                            except IndexError:
+                                await client.send_message(message.author,"Please choose a value from 1 to {}.".format(len(cahchoices[s])))
     await client.process_commands(message)
 
 client.run(options.token())
