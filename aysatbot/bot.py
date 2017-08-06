@@ -378,6 +378,24 @@ async def loctime(ctx, *city: str):
             m = "PM"
         if hr > 12 and hr <= 24:
             hr -= 12
+            if hr == 12:
+                m = "AM"
+                day += 1
+                if day == 32:
+                    day = 1
+                    mon += 1
+                    if mon == 13:
+                        mon = 1
+                        year += 1
+                elif day == 31 and mon in [4,6,9,11]:
+                    day = 1
+                    mon += 1
+                elif mon == 2 and day == 30 and (year % 4 == 0 and year % 100 != 0 or year % 400 == 0):
+                    day = 1
+                    mon += 1
+                elif mon == 2 and day == 29 and not (year % 4 == 0 and year % 100 != 0 or year % 400 == 0):
+                    day = 1
+                    mom = mon + 1
         elif hr >= 24:
             day += 1
             m = "AM"
@@ -678,6 +696,7 @@ async def on_message(message):
                                     await client.remove_reaction(confirm,'👎',client.user)
                                     await client.send_message(message.author,"Success!")
                                     await client.send_message(message.author,"{0.mention} won the round!".format(client.get_server(s).get_member(winner)))
+
                                 elif rxn.reaction.emoji == "👎":
                                     await client.send_message(message.author,"Please try again.")
                                     await client.remove_reaction(confirm,'👍',client.user)
