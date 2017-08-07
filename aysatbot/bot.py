@@ -197,7 +197,7 @@ async def improv(ctx, option: str):
                 else:
                     await client.say("Disabled turn order.")
             else:
-                await client.say("Order not set yet. (type ~order player1 player2 ... to set order)")
+                await client.say("Order not set yet. (type `~order player1 player2 ...` to set order)")
         else:
             await client.say("Improv impgame not in progress.")
     elif option == "turn":
@@ -221,11 +221,11 @@ async def improv(ctx, option: str):
                 ppl = ppl[2:]
                 await client.say(ppl)
             elif not impord[s]:
-                await client.say("Turn order not enabled (type ~improv order to enable)")
+                await client.say("Turn order not enabled (type `~improv order` to enable)")
             else:
                 await client.say("Improv game not in progress")
         except AttributeError:
-            await client.say("Order not set yet. (type ~order player1 player2 ... to set order)")
+            await client.say("Order not set yet. (type `~order` player1 player2 ... to set order)")
     else:
         await client.say("Unknown Improv command.")
 
@@ -256,9 +256,94 @@ async def order(ctx, *players):
             for i in turns[s]:
                 o.append(ctx.message.server.get_member(i))
             for x in o:
-                ppl = ppl + ", {0.mention}".format(x)
+                ppl += ", {0.mention}".format(x)
             ppl = ppl[2:]
             await client.say(ppl)
+
+@client.command(pass_context=True,description="Kicks someone from a game")
+async def gamekick(ctx, player: str=None):
+    s = ctx.message.server.id
+    if s not in turns:
+        turns[s] = []
+    try:
+        if ctx.message.server.get_member_named(player).id in turns[s] or player.replace("!","")[2:-1] in turns[s]:
+            if ctx.message.server.get_member(player.replace("!","")[2:-1]) != None:
+                i = turns[s].index(ctx.message.server.get_member(player.replace("!","")[2:-1]))
+            elif ctx.message.server.get_member_named(player) != None:
+                i = turns[s].index(ctx.message.server.get_member_named(player).id)
+            await client.say("Successfully kicked {0.mention} from the game!".format(ctx.message.server.get_member(turns[s][i])))
+            del turns[s][i], cahpoints[s][i], cahhands[s][i], cahresp[s][i], cahpicked[s][i]
+            if cahgame[s]:
+                if cahczar[s] not in cahplayers[s]:
+                    await client.say("The round was skipped due to the Card Czar leaving.")
+                    cahresp[s] = [True for q in range(len(cahresp[s]))]
+                    await client.say("Starting next round...")
+                    if i == len(cahplayers[s]):
+                        cahczar[s] = ctx.message.server.get_member(cahplayers[s][0])
+                    else:
+                        cahczar[s] = ctx.message.server.get_member(cahplayers[s][i])
+                    if cahplayers[s].index(cahczar[s].id) + 1 < len(cahplayers[s]):
+                        cahczar[s] = client.get_server(s).get_member(cahplayers[s][cahplayers[s].index(cahczar[s].id)+1])
+                    else:
+                        cahczar[s] = client.get_server(s).get_member(cahplayers[s][0])
+                    await client.say("Card Czar: {0.mention}".format(cahczar[s]))
+                    cahpicked[s] = [[] for x in range(len(turns[s]))]
+                    cahresults[s] = {}
+                    cahchoices[s] = []
+                    cahblack[s] = cahcb[s].pop()
+                    await client.say("```css\n{}\n```".format(cahblack[s]))
+                    cahpick[s] = cahblack[s].count("_")
+                    if cahpick[s] == 0:
+                        cahpick[s] = 1
+                    for index in range(len(cahplayers[s])):
+                        pm = client.get_server(s).get_member(cahplayers[s][index])
+                        try:
+                            if cahplayers[s][index] != cahczar[s].id:
+                                bcmessage = "-CAH-```css\n{}\n```\nYour cards:\n\n".format(cahblack[s])
+                                for j in range(10-len(cahhands[s][index])):
+                                    cahhands[s][index].append(cahcw[s].pop())
+                                mess = ""
+                                cnt = 1
+                                for k in cahhands[s][index]:
+                                    if mess == "":
+                                        mess += '```{}) {}```'.format(cnt,k)
+                                    else:
+                                        mess += "\n" + '```{}) {}```'.format(cnt,k)
+                                    cnt += 1
+                                if cahpick[s] == 1:
+                                    mess = bcmessage + mess + "\nPick `" + str(cahpick[s]) + "` card!"
+                                else:
+                                    mess = bcmessage + mess + "\nPick `" + str(cahpick[s]) + "` cards!"
+                                await client.send_message(pm,mess)
+                                cahresp[s][index] = False
+                            else:
+                                await client.send_message(pm,"-CAH-```css\n{}\n```\nYou are the Card Czar!".format(cahblack[s]))
+                        except:
+                            await client.say("An error occured sending a message to {0.mention}.".format(pm))
+
+                elif all(cahresp[s]):
+                    cahresults[s] = {}
+                    for x,y in zip(cahpicked[s],cahplayers[s]):
+                        if x != []:
+                            mess = "```"
+                            for cards in x:
+                                mess += cards + "``````"
+                            mess = mess[:-3]
+                            cahresults[s][mess] = y
+                    cahchoices[s] = list(cahresults[s].keys())
+                    random.shuffle(cahchoices[s])
+                    sendmain = "-Results-\n```css\n{}\n```-----\n{}".format(cahblack[s],"\n".join(cahchoices[s]))
+                    for c,n in zip(cahchoices[s],range(len(cahchoices[s]))):
+                        cahchoices[s][n] = "{}) {}".format(n+1,c)
+                    send = "-Results-\n```css\n{}\n```-----\n{}\nPick your favorite!".format(cahblack[s],"\n".join(cahchoices[s]))
+                    await client.send_message(client.get_server(s).get_channel(cahchannel[s]),sendmain)
+                    try:
+                        await client.send_message(cahczar[s],send)
+                    except:
+                        await client.say("An error occured sending a message to {0.mention}.".format(cahczar[s]))
+                    cahresp[s][cahplayers[s].index(cahczar[s].id)] = False
+    except KeyboardInterrupt:
+        await client.say('Could not find member named "{}"'.format(player))
 
 @client.command(pass_context=True,description="Who do you really like?")
 async def who(ctx):
@@ -454,7 +539,6 @@ cahpoints = {'serv id':['points (same index as players above)']}
 cahhands = {'serv id':[ ['white cards (same index as players above)'],['...'] ]}
 cahresp = {'serv id':['True/False for having picked or not (same index as players above)']}
 cahpicked = {'serv id':[ ['cards picked (same index as players above)'],['...'] ]}
-cahconfirm = {'serv id':['True/False (same index as players above)']}
 cahczar = {'serv id':'player'}
 cahplaying = {'user id':'serv id'}
 cahblack = {'serv id':'current black card'}
@@ -462,10 +546,10 @@ cahpick = {'serv id':'# of cards to pick (int)'}
 cahchannel = {'serv id':'channel'}
 cahresults = {'serv id':{'choice content':'user'}}
 cahchoices = {'serv id':['options']}
-#also gonna use turns and last
+cahafk = {'serv id':['afk people']}
 
 @client.command(pass_context=True,description="Cards Against Humanity!")
-async def cah(ctx, option: str):
+async def cah(ctx, option: str=None):
     s = ctx.message.server.id
     cahchannel[s] = ctx.message.channel.id
     if s not in cahgame:
@@ -477,62 +561,68 @@ async def cah(ctx, option: str):
         cahhands[s] = []
         cahresp[s] = []
         cahpicked[s] = []
-        cahconfirm[s] = []
     if s not in cahcb:
         cahcb[s] = []
         cahcw[s] = []
         cahblack[s] = ""
-        cahpick[s] = 0
-    if s not in turns:
-        await client.say("Set an order first! (AKA list of players)")
+        cahpick[s] = ""
+    if s not in turns and option != None:
+        await client.say("Set an order first with `~order`!")
         return
-    if option.lower() == "restart":
+    if option == None:
+        await client.say("```Commands:\n\n~cah [option]\n\n  restart - restarts game\n  pause - pauses game\n  resume - resumes game\n  score - see the current score\n  join - join a game\n  leave - leave a game (score removed)```")
+    elif option.lower() == "restart":
         if not cahgame[s]:
-            cahplayers[s] = turns[s]
-            cahpoints[s] = [0 for x in range(len(turns[s]))]
-            cahhands[s] = [[] for x in range(len(turns[s]))]
-            cahresp[s] = [True for x in range(len(turns[s]))]
-            cahpicked[s] = [[] for x in range(len(turns[s]))]
-            cahgame[s] = True
-            for p in cahplayers[s]:
-                cahplaying[p] = s
-            await client.say("Starting a game of Cards Against Humanity!")
-            cahczar[s] = ctx.message.server.get_member(cahplayers[s][0])
-            await client.say("Card Czar: {0.mention}".format(cahczar[s]))
-            cahcb[s] = blackCards
-            random.shuffle(cahcb[s])
-            cahcw[s] = whiteCards
-            random.shuffle(cahcw[s])
-            cahblack[s] = cahcb[s].pop()
-            await client.say("```css\n{}\n```".format(cahblack[s]))
-            cahpick[s] = cahblack[s].count("_")
-            if cahpick[s] == 0:
-                cahpick[s] = 1
-            for index in range(len(cahplayers[s])):
-                pm = ctx.message.server.get_member(cahplayers[s][index])
-                try:
-                    if cahplayers[s][index] != cahczar[s].id:
-                        bcmessage = "-CAH-```css\n{}\n```\nYour cards:\n\n".format(cahblack[s])
-                        for j in range(10):
-                            cahhands[s][index].append(cahcw[s].pop())
-                        mess = ""
-                        cnt = 1
-                        for k in cahhands[s][index]:
-                            if mess == "":
-                                mess += '```{}) {}```'.format(cnt,k)
+            if len(turns[s]) > 1:
+                if len(turns[s]) == 2:
+                    await client.say("Two people makes for a pretty lame game of CAH, just sayin'.\n-----")
+                cahplayers[s] = turns[s]
+                cahpoints[s] = [0 for x in range(len(turns[s]))]
+                cahhands[s] = [[] for x in range(len(turns[s]))]
+                cahresp[s] = [True for x in range(len(turns[s]))]
+                cahpicked[s] = [[] for x in range(len(turns[s]))]
+                cahgame[s] = True
+                for p in cahplayers[s]:
+                    cahplaying[p] = s
+                await client.say("Starting a game of Cards Against Humanity!")
+                cahczar[s] = ctx.message.server.get_member(cahplayers[s][0])
+                await client.say("Card Czar: {0.mention}".format(cahczar[s]))
+                cahcb[s] = blackCards
+                random.shuffle(cahcb[s])
+                cahcw[s] = whiteCards
+                random.shuffle(cahcw[s])
+                cahblack[s] = cahcb[s].pop()
+                await client.say("```css\n{}\n```".format(cahblack[s]))
+                cahpick[s] = cahblack[s].count("_")
+                if cahpick[s] == 0:
+                    cahpick[s] = 1
+                for index in range(len(cahplayers[s])):
+                    pm = ctx.message.server.get_member(cahplayers[s][index])
+                    try:
+                        if cahplayers[s][index] != cahczar[s].id:
+                            bcmessage = "-CAH-```css\n{}\n```\nYour cards:\n\n".format(cahblack[s])
+                            for j in range(10):
+                                cahhands[s][index].append(cahcw[s].pop())
+                            mess = ""
+                            cnt = 1
+                            for k in cahhands[s][index]:
+                                if mess == "":
+                                    mess += '```{}) {}```'.format(cnt,k)
+                                else:
+                                    mess += "\n" + '```{}) {}```'.format(cnt,k)
+                                cnt += 1
+                            if cahpick[s] == 1:
+                                mess = bcmessage + mess + "\nPick `" + str(cahpick[s]) + "`card!"
                             else:
-                                mess += "\n" + '```{}) {}```'.format(cnt,k)
-                            cnt += 1
-                        if cahpick[s] == 1:
-                            mess = bcmessage + mess + "\nPick `" + str(cahpick[s]) + "`card!"
+                                mess = bcmessage + mess + "\nPick `" + str(cahpick[s]) + "`cards!"
+                            await client.send_message(pm,mess)
+                            cahresp[s][index] = False
                         else:
-                            mess = bcmessage + mess + "\nPick `" + str(cahpick[s]) + "`cards!"
-                        await client.send_message(pm,mess)
-                        cahresp[s][index] = False
-                    else:
-                        await client.send_message(pm,"-CAH-```css\n{}\n```\nYou are the Card Czar!".format(cahblack[s]))
-                except:
-                    await client.say("An error occured sending a message to {0.mention}.".format(pm))
+                            await client.send_message(pm,"-CAH-```css\n{}\n```\nYou are the Card Czar!".format(cahblack[s]))
+                    except:
+                        await client.say("An error occured sending a message to {0.mention}.".format(pm))
+            else:
+                await client.say("Get some friends. Can't play CAH alone.")
         else:
             await client.say("Cannot restart while game is in progress!")
     elif option.lower() == "pause":
@@ -541,20 +631,48 @@ async def cah(ctx, option: str):
             for i in cahplayers[s]:
                 if i in cahplaying:
                     cahplaying[i] = None
-
             await client.say(":pause_button: Cards Against Humanity")
         else:
             await client.say("Cannot pause when game is already paused!")
     elif option.lower() == "resume":
-        if not cahgame[s] and cahplayers != []:
+        if not cahgame[s] and cahplayers[s] != []:
             cahgame[s] = True
             for p in cahplayers[s]:
                 cahplaying[p] = s
             await client.say(":arrow_forward: Cards Against Humanity")
-        elif cahplayers == []:
+        elif cahplayers[s] == []:
             await client.say("No CAH game currently exists!")
         else:
-            await client.say("CAH game is already in progress")
+            await client.say("CAH game is already in progress!")
+    elif option.lower() == "score":
+        if cahplayers[s] != []:
+            mess = "```"
+            for pl,pnts in zip(cahplayers[s],cahpoints[s]):
+                mess += "\n    {} | {}".format(pnts,ctx.message.server.get_member(pl).display_name)
+            mess += "```"
+            await client.say(mess)
+        else:
+            await client.say("No CAH game detected.")
+    elif option.lower() == "join":
+        if ctx.message.author.id not in cahplayers[s]:
+            cahplayers[s].append(ctx.message.author.id)
+            cahpoints[s].append(0)
+            cahhands[s].append([])
+            cahresp[s].append(True)
+            cahpicked[s].append([])
+            await client.say("{0.mention} has joined the game!".format(ctx.message.author))
+        else:
+            await client.say("You're already in the game, {0.mention}!".format(ctx.message.author))
+    elif option.lower() == "leave":
+        if ctx.message.author.id in cahplayers[s]:
+            i = cahplayers[s].index(ctx.message.author.id)
+            del cahplayers[s][i], cahpoints[s][i], cahhands[s][i], cahresp[s][i], cahpicked[s][i]
+            await client.say("{0.mention} has left the game!".format(ctx.message.author))
+        else:
+            await client.say("You're not in the game, {0.mention}!".format(ctx.message.author))
+
+    else:
+        await client.say("Incorrect usage. Type `~cah` for subcommands.")
 @client.event
 async def on_message(message):
     if message.author.id != client.user.id and message.author.id != "325108081241489408":
@@ -643,42 +761,43 @@ async def on_message(message):
                                 await client.add_reaction(confirm,'👍')
                                 await client.add_reaction(confirm,'👎')
                                 rxn = await client.wait_for_reaction(emoji=['👍','👎'],message=confirm,timeout=30,user=message.author)
-                                if rxn == None:
-                                    await client.remove_reaction(confirm,'👍',client.user)
-                                    await client.remove_reaction(confirm,'👎',client.user)
-                                    await client.send_message(message.author,"Confirmation timed out. Please try again.")
-                                elif rxn.reaction.emoji == '👍':
-                                    for i in picked:
-                                        cahpicked[s][p].append(cahhands[s][p][i])
-                                        del cahhands[s][p][i]
-                                    cahresp[s][p] = True
-                                    await client.send_message(client.get_server(s).get_channel(cahchannel[s]),"{0.author.mention} is done picking!".format(message))
-                                    await client.remove_reaction(confirm,'👎',client.user)
-                                    await client.send_message(message.author,"Success!")
-                                    if all(cahresp[s]):
-                                        cahresults[s] = {}
-                                        for x,y in zip(cahpicked[s],cahplayers[s]):
-                                            if x != []:
-                                                mess = "```"
-                                                for cards in x:
-                                                    mess += cards + "``````"
-                                                mess = mess[:-3]
-                                                cahresults[s][mess] = y
-                                        cahchoices[s] = list(cahresults[s].keys())
-                                        random.shuffle(cahchoices[s])
-                                        sendmain = "```css\n{}\n```\n{}".format(cahblack[s],"\n".join(cahchoices[s]))
-                                        for c,n in zip(cahchoices[s],range(len(cahchoices[s]))):
-                                            cahchoices[s][n] = "{}) {}".format(n+1,c)
-                                        send = "```css\n{}\n```\n{}".format(cahblack[s],"\n".join(cahchoices[s]))
-                                        await client.send_message(client.get_server(s).get_channel(cahchannel[s]),"-Results-")
-                                        await client.send_message(client.get_server(s).get_channel(cahchannel[s]),sendmain)
-                                        await client.send_message(cahczar[s],"-Results-")
-                                        await client.send_message(cahczar[s],send)
-                                        await client.send_message(cahczar[s],"Pick your favorite!")
-                                        cahresp[s][cahplayers[s].index(cahczar[s].id)] = False
-                                elif rxn.reaction.emoji == '👎':
-                                    await client.send_message(message.author,"Please try again.")
-                                    await client.remove_reaction(confirm,'👍',client.user)
+                                if not cahresp[s][p]:
+                                    if rxn == None:
+                                        await client.remove_reaction(confirm,'👍',client.user)
+                                        await client.remove_reaction(confirm,'👎',client.user)
+                                        await client.send_message(message.author,"Confirmation timed out. Please try again.")
+                                    elif rxn.reaction.emoji == '👍':
+                                        for i in picked:
+                                            cahpicked[s][p].append(cahhands[s][p][i])
+                                            del cahhands[s][p][i]
+                                        cahresp[s][p] = True
+                                        await client.send_message(client.get_server(s).get_channel(cahchannel[s]),"{0.author.mention} is done picking!".format(message))
+                                        await client.remove_reaction(confirm,'👎',client.user)
+                                        await client.send_message(message.author,"Success!")
+                                        if all(cahresp[s]):
+                                            cahresults[s] = {}
+                                            for x,y in zip(cahpicked[s],cahplayers[s]):
+                                                if x != []:
+                                                    mess = "```"
+                                                    for cards in x:
+                                                        mess += cards + "``````"
+                                                    mess = mess[:-3]
+                                                    cahresults[s][mess] = y
+                                            cahchoices[s] = list(cahresults[s].keys())
+                                            random.shuffle(cahchoices[s])
+                                            sendmain = "-Results-\n```css\n{}\n```-----\n{}".format(cahblack[s],"\n".join(cahchoices[s]))
+                                            for c,n in zip(cahchoices[s],range(len(cahchoices[s]))):
+                                                cahchoices[s][n] = "{}) {}".format(n+1,c)
+                                            send = "-Results-\n```css\n{}\n```-----\n{}\nPick your favorite!".format(cahblack[s],"\n".join(cahchoices[s]))
+                                            await client.send_message(client.get_server(s).get_channel(cahchannel[s]),sendmain)
+                                            try:
+                                                await client.send_message(cahczar[s],send)
+                                            except:
+                                                await client.say("An error occured sending a message to {0.mention}.".format(cahczar[s]))
+                                            cahresp[s][cahplayers[s].index(cahczar[s].id)] = False
+                                    elif rxn.reaction.emoji == '👎':
+                                        await client.send_message(message.author,"Please try again.")
+                                        await client.remove_reaction(confirm,'👍',client.user)
                         else:
                             try:
                                 picked = int(message.content) - 1
@@ -686,64 +805,72 @@ async def on_message(message):
                                 await client.send_message(message.author,"Invalid value given.")
                                 return
                             try:
+                                if picked < 0:
+                                    await client.send_message(message.author,"Please choose a value from 1 to {}.".format(len(cahchoices[s])))
+                                    return
                                 answer = cahchoices[s][picked][cahchoices[s][picked].index(")")+2:]
                                 confirm = await client.send_message(message.author,"{} Are you sure about that?".format(answer))
                                 await client.add_reaction(confirm,'👍')
                                 await client.add_reaction(confirm,'👎')
                                 rxn = await client.wait_for_reaction(emoji=['👍','👎'],message=confirm,timeout=30,user=message.author)
-                                if rxn == None:
-                                    await client.remove_reaction(confirm,'👍',client.user)
-                                    await client.remove_reaction(confirm,'👎',client.user)
-                                    await client.send_message(message.author,"Confirmation timed out. Please try again.")
-                                elif rxn.reaction.emoji == '👍':
-                                    chan = client.get_server(s).get_channel(cahchannel[s])
-                                    winner = cahresults[s][answer]
-                                    await client.remove_reaction(confirm,'👎',client.user)
-                                    await client.send_message(message.author,"Success!")
-                                    await client.send_message(chan,"{0} {1.mention} won the round!".format(answer,client.get_server(s).get_member(winner)))
-                                    cahpoints[s][cahplayers[s].index(winner)] += 1
-                                    await client.send_message(chan,"Starting next round...")
-                                    if cahplayers[s].index(cahczar[s].id) + 1 < len(cahplayers[s]):
-                                        cahczar[s] = client.get_server(s).get_member(cahplayers[s][cahplayers[s].index(cahczar[s].id)+1])
-                                    else:
-                                        cahczar[s] = client.get_server(s).get_member(cahplayers[s][0])
-                                    await client.send_message(chan,"Card Czar: {0.mention}".format(cahczar[s]))
-                                    cahpicked[s] = [[] for x in range(len(turns[s]))]
-                                    cahresults[s] = {}
-                                    cahchoices[s] = []
-                                    cahblack[s] = cahcb[s].pop()
-                                    await client.send_message(chan,"```css\n{}\n```".format(cahblack[s]))
-                                    cahpick[s] = cahblack[s].count("_")
-                                    if cahpick[s] == 0:
-                                        cahpick[s] = 1
-                                    for index in range(len(cahplayers[s])):
-                                        pm = client.get_server(s).get_member(cahplayers[s][index])
-                                        try:
-                                            if cahplayers[s][index] != cahczar[s].id:
-                                                bcmessage = "-CAH-```css\n{}\n```\nYour cards:\n\n".format(cahblack[s])
-                                                for j in range(10-len(cahhands[s][index])):
-                                                    cahhands[s][index].append(cahcw[s].pop())
-                                                mess = ""
-                                                cnt = 1
-                                                for k in cahhands[s][index]:
-                                                    if mess == "":
-                                                        mess += '```{}) {}```'.format(cnt,k)
+                                if not cahresp[s][p]:
+                                    if rxn == None:
+                                        await client.remove_reaction(confirm,'👍',client.user)
+                                        await client.remove_reaction(confirm,'👎',client.user)
+                                        await client.send_message(message.author,"Confirmation timed out. Please try again.")
+                                    elif rxn.reaction.emoji == '👍':
+                                        chan = client.get_server(s).get_channel(cahchannel[s])
+                                        winner = cahresults[s][answer]
+                                        await client.remove_reaction(confirm,'👎',client.user)
+                                        await client.send_message(message.author,"Success!")
+                                        scoreboard = "```"
+                                        for pl,pnts in zip(cahplayers[s],cahpoints[s]):
+                                            scoreboard += "\n    {} | {}".format(pnts,client.get_server(s).get_member(pl).display_name)
+                                        scoreboard += "```"
+                                        await client.send_message(chan,"----------\n{0}\n{1.mention} won the round!\n-----\n{2}\n----------".format(answer,client.get_server(s).get_member(winner),scoreboard))
+                                        cahpoints[s][cahplayers[s].index(winner)] += 1
+                                        await client.send_message(chan,"Starting next round...")
+                                        if cahplayers[s].index(cahczar[s].id) + 1 < len(cahplayers[s]):
+                                            cahczar[s] = client.get_server(s).get_member(cahplayers[s][cahplayers[s].index(cahczar[s].id)+1])
+                                        else:
+                                            cahczar[s] = client.get_server(s).get_member(cahplayers[s][0])
+                                        await client.send_message(chan,"Card Czar: {0.mention}".format(cahczar[s]))
+                                        cahpicked[s] = [[] for x in range(len(turns[s]))]
+                                        cahresults[s] = {}
+                                        cahchoices[s] = []
+                                        cahblack[s] = cahcb[s].pop()
+                                        await client.send_message(chan,"```css\n{}\n```".format(cahblack[s]))
+                                        cahpick[s] = cahblack[s].count("_")
+                                        if cahpick[s] == 0:
+                                            cahpick[s] = 1
+                                        for index in range(len(cahplayers[s])):
+                                            pm = client.get_server(s).get_member(cahplayers[s][index])
+                                            try:
+                                                if cahplayers[s][index] != cahczar[s].id:
+                                                    bcmessage = "-CAH-```css\n{}\n```\nYour cards:\n\n".format(cahblack[s])
+                                                    for j in range(10-len(cahhands[s][index])):
+                                                        cahhands[s][index].append(cahcw[s].pop())
+                                                    mess = ""
+                                                    cnt = 1
+                                                    for k in cahhands[s][index]:
+                                                        if mess == "":
+                                                            mess += '```{}) {}```'.format(cnt,k)
+                                                        else:
+                                                            mess += "\n" + '```{}) {}```'.format(cnt,k)
+                                                        cnt += 1
+                                                    if cahpick[s] == 1:
+                                                        mess = bcmessage + mess + "\nPick `" + str(cahpick[s]) + "` card!"
                                                     else:
-                                                        mess += "\n" + '```{}) {}```'.format(cnt,k)
-                                                    cnt += 1
-                                                if cahpick[s] == 1:
-                                                    mess = bcmessage + mess + "\nPick `" + str(cahpick[s]) + "`card!"
+                                                        mess = bcmessage + mess + "\nPick `" + str(cahpick[s]) + "` cards!"
+                                                    await client.send_message(pm,mess)
+                                                    cahresp[s][index] = False
                                                 else:
-                                                    mess = bcmessage + mess + "\nPick `" + str(cahpick[s]) + "`cards!"
-                                                await client.send_message(pm,mess)
-                                                cahresp[s][index] = False
-                                            else:
-                                                await client.send_message(pm,"-CAH-```css\n{}\n```\nYou are the Card Czar!".format(cahblack[s]))
-                                        except:
-                                            await client.say("An error occured sending a message to {0.mention}.".format(pm))
-                                elif rxn.reaction.emoji == "👎":
-                                    await client.send_message(message.author,"Please try again.")
-                                    await client.remove_reaction(confirm,'👍',client.user)
+                                                    await client.send_message(pm,"-CAH-```css\n{}\n```\nYou are the Card Czar!".format(cahblack[s]))
+                                            except:
+                                                await client.say("An error occured sending a message to {0.mention}.".format(pm))
+                                    elif rxn.reaction.emoji == "👎":
+                                        await client.send_message(message.author,"Please try again.")
+                                        await client.remove_reaction(confirm,'👍',client.user)
                             except IndexError:
                                 await client.send_message(message.author,"Please choose a value from 1 to {}.".format(len(cahchoices[s])))
     await client.process_commands(message)
