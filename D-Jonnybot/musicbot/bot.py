@@ -1755,6 +1755,10 @@ class MusicBot(discord.Client):
 
         if self.config.auto_playlist:
             await self.on_player_finished_playing(player)
+        return Response(
+            "```Successfully joined channel \"%s\"!```" % author.voice_channel.name,
+            delete_after=25
+        )
 
     async def cmd_pause(self, player):
         """
