@@ -3,12 +3,16 @@ Game, Music, Satire
 
 ## Current Projects
   + Never Have I Ever implementation
-  + Possible Cards Against Humanity implementation?
   + Polishing up music bot
   + Speech emulation for Kevin M, Vern, Aaron, Gabby, Colin
   + Better code
 
 ## Releases
+### v1.2.0
+  + Added Cards Against Humanity
+  + Gamemod and gamekick make game moderation easier
+  + Music bot commands limited to #song-requests channel for less spam
+  + GitHub updates in Chaos Dev (hope this works)
 
 ### v1.1.1
   + Local time finder
