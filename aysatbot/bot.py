@@ -23,7 +23,7 @@ aly = ["Go scotts!", "I LOVE CATS THEYRE SO CUTE@@@@@@@@", "YOURE KILLING POLAR 
 
 jo = ["Lol","Lol","Lol","Lol","Lol","Lol","Lol","Lol","Lol","Lol","Lol","Lol","Lol","Lol","Lol","Lol","Lol","Lol","Lol","Lol","Lo\n*l","Lpl\n*Lol","Lpl\n*Lpl\n**Lol",  "WE MUST SEIZE THE MEANS OF SOCIAL GRATIFICATION"]
 
-kw = ["Annoying and unoriginal","Good question","#discordmasterrace","salty af"]
+kw = ["Annoying and unoriginal","Good question","#discordmasterrace","salty af","That's cool","Wow CONGRATULATIONS!!","I would like to point out once again that I do not ship galex"]
 
 al = ["K","Wau","K then","Bro rip","Um"]
 
@@ -33,6 +33,7 @@ jny = ["aysat","AND HIS NAME IS JOHN CENA!!!","Are you sure about that?","Bruh",
 
 ga = ["Wau","Harsh","Wau harsh","Lol","Yup","STAHP","HAHA","*shrugs*","Oh","IM DONE","Uhh...","Yey","YAASSSSSS","DAMN"]
 
+ma = ["yeet","~max","Wat","MEINKRAFT"]
 cous = open(os.path.join(os.path.dirname(__file__),"lists\\countries.txt"),encoding="utf8")
 coulist = cous.readlines()
 cous.close()
@@ -64,46 +65,71 @@ async def on_ready():
     print(discord.__version__)
     print("------")
 
-@client.command(pass_context=True,description="Simulates Alyssa's speech patterns with 100% accuracy",categories="test")
-async def alyssa(ctx):
+@client.command(pass_context=True)
+async def deadline(ctx):
+    d = datetime.datetime.today().weekday()
+    if d == 1:
+        await client.say("It's TUUUUUESDAY!!!!!")
+    elif d == 2:
+        await client.say("It's EDNESDAYYY!!!!!")
+    elif d == 3:
+        await client.say("It's HUUURSDAY!!!!!")
+    elif d == 4:
+        await client.say("It's FRIIIIDAAYY!!!!!")
+    elif d == 5:
+        await client.say("It's SAATURDAAYY!!!!!")
+    elif d == 6:
+        await client.say("It's SUUUUNDAY!!!!!")
+    elif d == 0:
+        await client.say("It's MOOOOONDAY!!!!!")
+    await client.delete_message(ctx.message)
+
+@client.command(pass_context=True,description="Simulates Alyssa's speech patterns with 100% accuracy")
+async def Alyssa(ctx):
     for i in range(0,3):
         rand = random.choice(aly)
         await client.say(rand)
     await client.delete_message(ctx.message)
 
 @client.command(pass_context=True,description="Simulates Joe's speech patterns with 100% accuracy")
-async def joe(ctx):
+async def Joe(ctx):
     rand = random.choice(jo)
     await client.say(rand)
     await client.delete_message(ctx.message)
 
 @client.command(pass_context=True,description="Simulates Kevin W's speech patterns with 100% accuracy")
-async def kevw(ctx):
+async def Kevw(ctx):
     rand = random.choice(kw)
     await client.say(rand)
     await client.delete_message(ctx.message)
 
 @client.command(pass_context=True,description="Simulates Alex's speech patterns with 100% accuracy")
-async def alex(ctx):
+async def Alex(ctx):
     rand = random.choice(al)
     await client.say(rand)
     await client.delete_message(ctx.message)
 
 @client.command(pass_context=True,description="Simulates Owen's speech patterns with 100% accuracy")
-async def owen(ctx):
+async def Owen(ctx):
     rand = random.choice(ow)
     await client.say(rand)
     await client.delete_message(ctx.message)
 
 @client.command(pass_context=True,description="Simulates Jonny's speech patterns with 100% accuracy")
-async def jon(ctx):
+async def Jon(ctx):
     rand = random.choice(jny)
     await client.say(rand)
     await client.delete_message(ctx.message)
 
 @client.command(pass_context=True,description="Simulates Gabby's speech patterns with 100% accuracy")
-async def gab(ctx):
+async def Gab(ctx):
     rand = random.choice(ga)
+    await client.say(rand)
+    await client.delete_message(ctx.message)
+
+@client.command(pass_context=True,description="Simulates Gabby's speech patterns with 100% accuracy")
+async def Max(ctx):
+    rand = random.choice(ma)
     await client.say(rand)
     await client.delete_message(ctx.message)
 
@@ -478,7 +504,7 @@ async def weather(ctx, *city: str):
             fe = ":cloud_snow:"
         elif fore == "Thunderstorm":
             fe = ":thunder_cloud_rain:"
-        elif fore == "Haze":
+        elif fore == "Haze" or fore == "Smoke":
             fe = "<:haze:336952276524466179>"
         elif fore == "Mist":
             fe = "<:mist:336948218141343744>"
@@ -986,6 +1012,8 @@ async def on_message(message):
             #aysat spam for #nsfw-spam
             if message.author.id != message.server.me.id and message.content[0] not in [bot_prefix,"!"] and areya == True and "?" not in message.content and message.channel.name=="nsfw-spam":
                 await client.send_message(message.channel, '{0.author.mention}, are you sure about that?'.format(message))
+            if message.author.id in ["320659306745954304"] and any(x in message.content.lower() for x in ["problem","api","bot","bug","link?"]):
+                await client.send_message(message.channel,random.choice(["Read documentation.","Read. Documentation.","READ DOCUMENTATION","Documentation. Read it.","READ. DOCUMENTATION.","By the way, have I mentioned that you should read the documentation?"]))
             #occasionally saying aysat to something
             if message.author.id != message.server.me.id and message.content[0] not in [bot_prefix,"!"] and "?" not in message.content and len(message.content) > 4 and " " in message.content:
                 if random.randint(1,100) == 1:
