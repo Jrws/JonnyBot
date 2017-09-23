@@ -8,6 +8,9 @@ Game, Music, Satire
   + Better code
 
 ## Releases
+### v1.3.0
+  + 8ball, root commands
+  
 ### v1.2.0
   + Added Cards Against Humanity
   + Gamemod and gamekick make game moderation easier
